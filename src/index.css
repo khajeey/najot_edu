@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+* {
+  font-family: "Segoe UI", "Inter", Arial, sans-serif;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
