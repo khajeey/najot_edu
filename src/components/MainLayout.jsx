@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -50,6 +50,10 @@ export default function MainLayout() {
   const location = useLocation();
   const [settingsOpen, setSettingsOpen] = useState(location.pathname.startsWith("/dashboard/boshqarish"));
   const showSettings = settingsOpen;
+
+  useEffect(() => {
+    setSettingsOpen(location.pathname.startsWith("/dashboard/boshqarish"));
+  }, [location.pathname]);
 
   return (
     <Box

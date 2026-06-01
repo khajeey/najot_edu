@@ -3,6 +3,10 @@ import {
   Box,
   Button,
   Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
   InputAdornment,
   Paper,
@@ -44,18 +48,43 @@ const initialTeachers = [
 
 export default function Teachers() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editingTeacher, setEditingTeacher] = useState(null);
+  const [deletingTeacher, setDeletingTeacher] = useState(null);
+  const [viewingTeacher, setViewingTeacher] = useState(null);
   const [teachers, setTeachers] = useState(initialTeachers);
 
   const handleSave = (teacher) => {
-    setTeachers((current) => [
-      {
-        id: Date.now(),
-        avatar: "",
-        ...teacher,
-      },
-      ...current,
-    ]);
+    setTeachers((current) => {
+      if (teacher.id) {
+        return current.map((item) => item.id === teacher.id ? { ...item, ...teacher } : item);
+      }
+
+      return [
+        {
+          id: Date.now(),
+          avatar: "",
+          ...teacher,
+        },
+        ...current,
+      ];
+    });
+    setEditingTeacher(null);
     setDrawerOpen(false);
+  };
+
+  const openCreateDrawer = () => {
+    setEditingTeacher(null);
+    setDrawerOpen(true);
+  };
+
+  const openEditDrawer = (teacher) => {
+    setEditingTeacher(teacher);
+    setDrawerOpen(true);
+  };
+
+  const handleDelete = () => {
+    setTeachers((current) => current.filter((teacher) => teacher.id !== deletingTeacher.id));
+    setDeletingTeacher(null);
   };
 
   return (
@@ -66,7 +95,7 @@ export default function Teachers() {
         </Typography>
         <Button
           startIcon={<FiPlus size={21} />}
-          onClick={() => setDrawerOpen(true)}
+          onClick={openCreateDrawer}
           sx={{
             height: 46,
             px: 2.7,
@@ -178,13 +207,13 @@ export default function Teachers() {
                 <TableCell sx={bodyCellStyles}>{teacher.createdAt}</TableCell>
                 <TableCell align="right" sx={bodyCellStyles}>
                   <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.2 }}>
-                    <IconButton aria-label="view" sx={actionButtonStyles}>
+                    <IconButton aria-label="view" onClick={() => setViewingTeacher(teacher)} sx={actionButtonStyles}>
                       <FiEye size={19} />
                     </IconButton>
-                    <IconButton aria-label="delete" sx={actionButtonStyles}>
+                    <IconButton aria-label="delete" onClick={() => setDeletingTeacher(teacher)} sx={actionButtonStyles}>
                       <FiTrash2 size={19} />
                     </IconButton>
-                    <IconButton aria-label="edit" sx={actionButtonStyles}>
+                    <IconButton aria-label="edit" onClick={() => openEditDrawer(teacher)} sx={actionButtonStyles}>
                       <FiEdit2 size={19} />
                     </IconButton>
                   </Box>
@@ -234,8 +263,63 @@ export default function Teachers() {
         </Box>
       </Paper>
 
-      <TeacherDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onSave={handleSave} />
+      <TeacherDrawer
+        open={drawerOpen}
+        initialData={editingTeacher}
+        onClose={() => {
+          setDrawerOpen(false);
+          setEditingTeacher(null);
+        }}
+        onSave={handleSave}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deletingTeacher)}
+        title="O'qituvchini o'chirish"
+        text={`${deletingTeacher?.name || ""} ma'lumotini o'chirishni tasdiqlaysizmi?`}
+        onClose={() => setDeletingTeacher(null)}
+        onConfirm={handleDelete}
+      />
+
+      <InfoDialog
+        open={Boolean(viewingTeacher)}
+        title="O'qituvchi ma'lumotlari"
+        item={viewingTeacher}
+        onClose={() => setViewingTeacher(null)}
+      />
     </Box>
+  );
+}
+
+function ConfirmDialog({ open, title, text, onClose, onConfirm }) {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
+      <DialogContent sx={{ color: "#5e6570" }}>{text}</DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onClose} sx={{ textTransform: "none", color: "#4d5662" }}>Bekor qilish</Button>
+        <Button onClick={onConfirm} sx={{ textTransform: "none", bgcolor: "#ef4444", color: "#fff", "&:hover": { bgcolor: "#dc2626" } }}>
+          O'chirish
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+function InfoDialog({ open, title, item, onClose }) {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
+      <DialogContent sx={{ minWidth: 320, color: "#39404c" }}>
+        <Typography>Ism: {item?.name}</Typography>
+        <Typography>Telefon: {item?.phone}</Typography>
+        <Typography>Email: {item?.email}</Typography>
+        <Typography>Manzil: {item?.address}</Typography>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onClose} sx={{ textTransform: "none", color: purple }}>Yopish</Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -16,7 +16,7 @@ import {
 import { FiCalendar, FiMail, FiPlus, FiSearch, FiUploadCloud, FiX } from "react-icons/fi";
 import { purple } from "./constants";
 
-export default function TeacherDrawer({ open, onClose, onSave }) {
+export default function TeacherDrawer({ open, initialData, onClose, onSave }) {
   const [form, setForm] = useState({
     phone: "+998",
     email: "",
@@ -25,12 +25,25 @@ export default function TeacherDrawer({ open, onClose, onSave }) {
     gender: "",
   });
 
+  useEffect(() => {
+    if (!open) return;
+
+    setForm({
+      phone: initialData?.phone || "+998",
+      email: initialData?.email || "",
+      fullName: initialData?.name || "",
+      birthDate: initialData?.birthDate || "01.03.1990",
+      gender: initialData?.gender || "",
+    });
+  }, [initialData, open]);
+
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
   const handleSave = () => {
     onSave({
+      id: initialData?.id,
       name: form.fullName || "Yangi o'qituvchi",
       phone: form.phone || "+998",
       email: form.email || "teacher@gmail.com",
@@ -67,7 +80,7 @@ export default function TeacherDrawer({ open, onClose, onSave }) {
           <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 0.8 }}>
             <Box>
               <Typography sx={{ fontSize: 18, fontWeight: 700, color: "#2b2d33" }}>
-                O'qituvchi qoshish
+                {initialData ? "O'qituvchini tahrirlash" : "O'qituvchi qoshish"}
               </Typography>
               <Typography sx={{ mt: 0.7, fontSize: 12, color: "#777b83" }}>
                 Bu yerda siz yangi o'qituvchi qo'shishingiz mumkin.
