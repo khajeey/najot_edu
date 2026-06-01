@@ -31,6 +31,7 @@ import {
   FaUserTie,
 } from "react-icons/fa";
 import educoinLogo from "../assets/educoin.png";
+import Settings from "./Settings";
 
 const purple = "#7456d8";
 const pageBg = "#f4f4f5";
@@ -41,11 +42,14 @@ const menuItems = [
   { label: "Guruhlar", path: "/groups", icon: FaLayerGroup },
   { label: "Talabalar", path: "/students", icon: FaUserGraduate },
   { label: "Sovg'alar", path: "/gifts", icon: FaGift },
-  { label: "Boshqarish", path: "/management", icon: FaCog, arrow: true },
+  { label: "Boshqarish", path: "/dashboard/boshqarish", icon: FaCog, arrow: true, settings: true },
 ];
 
 export default function MainLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
+  const [settingsOpen, setSettingsOpen] = useState(location.pathname.startsWith("/dashboard/boshqarish"));
+  const showSettings = settingsOpen;
 
   return (
     <Box
@@ -58,7 +62,15 @@ export default function MainLayout() {
         borderTop: "2px solid #233333",
       }}
     >
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)} />
+      <Sidebar
+        collapsed={collapsed}
+        settingsOpen={showSettings}
+        onOpenSettings={() => setSettingsOpen(true)}
+        onToggle={() => setCollapsed((value) => !value)}
+      />
+      {showSettings && (
+        <Settings onClose={() => setSettingsOpen(false)} />
+      )}
 
       <Box
         component="main"
@@ -76,7 +88,7 @@ export default function MainLayout() {
   );
 }
 
-function Sidebar({ collapsed, onToggle }) {
+function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -89,7 +101,7 @@ function Sidebar({ collapsed, onToggle }) {
         minHeight: "calc(100vh - 2px)",
         flexShrink: 0,
         bgcolor: "#fff",
-        borderRadius: "0 22px 22px 0",
+        borderRadius: settingsOpen ? 0 : "0 22px 22px 0",
         display: { xs: "none", md: "flex" },
         flexDirection: "column",
         position: "relative",
@@ -143,17 +155,31 @@ function Sidebar({ collapsed, onToggle }) {
       <Box sx={{ px: 1.25, display: "flex", flexDirection: "column", gap: 0.8 }}>
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const active = location.pathname === item.path;
+          const active = item.settings
+            ? location.pathname.startsWith("/dashboard/boshqarish") || settingsOpen
+            : location.pathname === item.path;
+
+          const handleClick = () => {
+            if (item.settings) {
+              onOpenSettings();
+              if (!location.pathname.startsWith("/dashboard/boshqarish")) {
+                navigate("/dashboard/boshqarish/kurslar");
+              }
+              return;
+            }
+
+            navigate(item.path);
+          };
 
           return (
             <Tooltip key={item.path} title={collapsed ? item.label : ""} placement="right" arrow>
               <Box
                 role="button"
                 tabIndex={0}
-                onClick={() => navigate(item.path)}
+                onClick={handleClick}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
-                    navigate(item.path);
+                    handleClick();
                   }
                 }}
                 sx={{
@@ -181,7 +207,11 @@ function Sidebar({ collapsed, onToggle }) {
                     <Typography sx={{ flex: 1, fontSize: 17, fontWeight: 600 }}>
                       {item.label}
                     </Typography>
-                    {item.arrow && <FiChevronRight size={22} color="#9aa0a8" />}
+                    {item.arrow && (
+                      settingsOpen || location.pathname.startsWith("/dashboard/boshqarish")
+                        ? <FiChevronDown size={22} color={purple} />
+                        : <FiChevronRight size={22} color="#9aa0a8" />
+                    )}
                   </>
                 )}
               </Box>
