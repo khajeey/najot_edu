@@ -1,7 +1,11 @@
 import axios from "axios";
 
+const API_ORIGIN = "https://najot-edu.softwareengineer.uz";
+
 export const api = axios.create({
-  baseURL: "/api/v1",
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.DEV ? "/api/v1" : `${API_ORIGIN}/api/v1`),
 });
 
 api.interceptors.request.use((config) => {
@@ -35,6 +39,16 @@ export function getApiErrorMessage(error, fallback) {
       return "Tarmoq xatosi. Internet yoki server ulanishini tekshiring.";
     }
     return error.message || fallback;
+  }
+
+  const status = error.response.status;
+
+  if (status === 413) {
+    return "Fayl juda katta. Server limitidan oshdi — kichikroq fayl tanlang (tavsiya: 15 MB gacha).";
+  }
+
+  if (status === 404) {
+    return "So'rov topilmadi (404). API manzili yoki endpoint noto'g'ri bo'lishi mumkin.";
   }
 
   return error.response?.data?.message || error.message || fallback;

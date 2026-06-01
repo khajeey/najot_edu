@@ -10,11 +10,19 @@ import {
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeft, FiUploadCloud } from "react-icons/fi";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
-import { purple } from "./constants";
+import { pageTitleSx, panelPaperSx } from "../../theme/surfaces";
 import { fetchLessonTopics, resolveLessonId } from "./lessonApi";
 import TopicComboField from "./TopicComboField";
 
 const green = "#20b486";
+const MAX_FILE_BYTES = 15 * 1024 * 1024;
+
+function formatFileSize(bytes) {
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export default function HomeworkCreatePage() {
   const { groupId } = useParams();
@@ -33,9 +41,37 @@ export default function HomeworkCreatePage() {
     fetchLessonTopics(groupId).then(setTopicOptions);
   }, [groupId]);
 
+  const handleFileChange = (selected) => {
+    if (!selected) {
+      setFile(null);
+      return;
+    }
+
+    if (selected.size > MAX_FILE_BYTES) {
+      setErrorMessage(
+        `Fayl juda katta (${formatFileSize(selected.size)}). Maksimal ${formatFileSize(MAX_FILE_BYTES)}.`
+      );
+      setFile(null);
+      return;
+    }
+
+    setErrorMessage("");
+    setFile(selected);
+  };
+
   const handleSubmit = async () => {
+    if (!topicValue.lessonId && !topicValue.customTopic?.trim()) {
+      setErrorMessage("Mavzuni tanlang yoki kiriting");
+      return;
+    }
+
     if (!title.trim()) {
       setErrorMessage("Izoh maydonini to'ldiring");
+      return;
+    }
+
+    if (!file) {
+      setErrorMessage("Fayl tanlash shart");
       return;
     }
 
@@ -52,17 +88,14 @@ export default function HomeworkCreatePage() {
       });
 
       const formData = new FormData();
-      formData.append("lesson_id", String(lessonId));
-      formData.append("group_id", String(groupId));
+      formData.append("lesson_id", String(Number(lessonId)));
+      formData.append("group_id", String(Number(groupId)));
       formData.append("title", title.trim());
-
-      if (file) {
-        formData.append("file", file);
-      }
+      formData.append("file", file);
 
       const { data } = await api.post("/homework", formData);
 
-      if (!data.success) {
+      if (data?.success === false) {
         throw new Error(data.message || "Uyga vazifa yaratishda xatolik");
       }
 
@@ -76,16 +109,25 @@ export default function HomeworkCreatePage() {
 
   return (
     <Box sx={{ maxWidth: 920 }}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 3 }}>
-        <IconButton onClick={() => navigate(`/groups/${groupId}`, { state: { tab: 1 } })} sx={backIconStyles}>
-          <FiArrowLeft size={22} />
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 2 }}>
+        <IconButton
+          onClick={() => navigate(`/groups/${groupId}`, { state: { tab: 1 } })}
+          sx={{
+            width: 36,
+            height: 36,
+            border: "1px solid",
+            borderColor: "divider",
+            bgcolor: "background.paper",
+          }}
+        >
+          <FiArrowLeft size={20} />
         </IconButton>
-        <Typography sx={{ fontSize: 28, fontWeight: 700, color: "#10131a" }}>Yangi uyga vazifa yaratish</Typography>
+        <Typography sx={pageTitleSx}>Yangi uyga vazifa yaratish</Typography>
       </Box>
 
-      <Typography sx={{ mb: 2.5, color: "#6b7280", fontSize: 15 }}>{groupName}</Typography>
+      <Typography sx={{ mb: 2, color: "text.secondary", fontSize: 14 }}>{groupName}</Typography>
 
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: "12px", border: "1px solid #e7e9ef", bgcolor: "#fff" }}>
+      <Paper elevation={0} sx={{ ...panelPaperSx, p: { xs: 2, md: 3 } }}>
         <FormField label="Mavzu" required>
           <TopicComboField
             options={topicOptions}
@@ -96,34 +138,36 @@ export default function HomeworkCreatePage() {
         </FormField>
 
         <FormField label="Izoh" required>
-          <Box sx={{ border: "1px solid #dce2eb", borderRadius: "10px", overflow: "hidden" }}>
+          <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: "10px", overflow: "hidden" }}>
             <Box
               sx={{
                 px: 1.5,
-                py: 1,
-                borderBottom: "1px solid #edf0f4",
+                py: 0.8,
+                borderBottom: "1px solid",
+                borderColor: "divider",
                 display: "flex",
                 flexWrap: "wrap",
-                gap: 0.8,
-                bgcolor: "#fafbfc",
+                gap: 0.6,
+                bgcolor: "action.hover",
               }}
             >
               {["H1", "H2", "B", "I", "U", "•", "1."].map((tool) => (
                 <Box
                   key={tool}
                   sx={{
-                    minWidth: 32,
-                    height: 28,
-                    px: 1,
+                    minWidth: 28,
+                    height: 24,
+                    px: 0.8,
                     borderRadius: "6px",
-                    bgcolor: "#fff",
-                    border: "1px solid #e5e7eb",
+                    bgcolor: "background.paper",
+                    border: "1px solid",
+                    borderColor: "divider",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: 700,
-                    color: "#6b7280",
+                    color: "text.secondary",
                   }}
                 >
                   {tool}
@@ -136,7 +180,7 @@ export default function HomeworkCreatePage() {
               placeholder="Vazifa haqida batafsil ma'lumot kiriting..."
               fullWidth
               multiline
-              minRows={8}
+              minRows={6}
               sx={textareaStyles}
             />
           </Box>
@@ -151,26 +195,37 @@ export default function HomeworkCreatePage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 1,
-            minHeight: 160,
-            border: "2px dashed #d8dee8",
+            minHeight: 140,
+            border: "2px dashed",
+            borderColor: "divider",
             borderRadius: "12px",
-            bgcolor: "#fafbfc",
+            bgcolor: "action.hover",
             cursor: "pointer",
-            "&:hover": { bgcolor: "#f5fbf8", borderColor: green },
+            "&:hover": { borderColor: green, bgcolor: "action.selected" },
           }}
         >
-          <FiUploadCloud size={34} color={green} />
-          <Typography sx={{ fontWeight: 600, color: "#374151" }}>
+          <FiUploadCloud size={30} color={green} />
+          <Typography sx={{ fontWeight: 600, fontSize: 14, color: "text.primary" }}>
             {file ? file.name : "Faylni tanlash yoki shu yerga tashlang"}
           </Typography>
-          <input hidden type="file" onChange={(event) => setFile(event.target.files?.[0] || null)} />
+          <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+            Maksimal hajm: {formatFileSize(MAX_FILE_BYTES)}
+          </Typography>
+          <input
+            hidden
+            type="file"
+            accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.mp4,.webm,.zip"
+            onChange={(event) => handleFileChange(event.target.files?.[0] || null)}
+          />
         </Box>
 
         {errorMessage && (
-          <Typography sx={{ mt: 2, color: "#ef4444", fontWeight: 600 }}>{errorMessage}</Typography>
+          <Typography sx={{ mt: 2, color: "#ef4444", fontWeight: 600, fontSize: 14 }}>
+            {errorMessage}
+          </Typography>
         )}
 
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5, mt: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5, mt: 2.5 }}>
           <Button
             variant="outlined"
             onClick={() => navigate(`/groups/${groupId}`, { state: { tab: 1 } })}
@@ -190,9 +245,13 @@ export default function HomeworkCreatePage() {
 
 function FormField({ label, required, children }) {
   return (
-    <Box sx={{ mb: 2.5 }}>
-      <Typography sx={{ mb: 1, fontSize: 15, fontWeight: 700, color: "#374151" }}>
-        {required && <Box component="span" sx={{ color: "#ef4444" }}>* </Box>}
+    <Box sx={{ mb: 2 }}>
+      <Typography sx={{ mb: 0.8, fontSize: 14, fontWeight: 700, color: "text.primary" }}>
+        {required && (
+          <Box component="span" sx={{ color: "#ef4444" }}>
+            *{" "}
+          </Box>
+        )}
         {label}
       </Typography>
       {children}
@@ -200,38 +259,32 @@ function FormField({ label, required, children }) {
   );
 }
 
-const backIconStyles = {
-  width: 40,
-  height: 40,
-  border: "1px solid #e5e7eb",
-  bgcolor: "#fff",
-};
-
 const textareaStyles = {
   "& .MuiOutlinedInput-root": {
     borderRadius: 0,
-    fontSize: 15,
+    fontSize: 14,
     alignItems: "flex-start",
     "& fieldset": { border: "none" },
   },
 };
 
 const cancelButtonStyles = {
-  height: 46,
-  px: 2.5,
+  height: 40,
+  px: 2,
   borderRadius: "10px",
   textTransform: "none",
-  fontWeight: 700,
-  color: "#374151",
-  borderColor: "#dce2eb",
+  fontWeight: 600,
+  fontSize: 14,
+  borderColor: "divider",
 };
 
 const submitButtonStyles = {
-  height: 46,
-  px: 2.8,
+  height: 40,
+  px: 2.5,
   borderRadius: "10px",
   textTransform: "none",
-  fontWeight: 700,
+  fontWeight: 600,
+  fontSize: 14,
   bgcolor: green,
   color: "#fff",
   "&:hover": { bgcolor: "#1aa377" },

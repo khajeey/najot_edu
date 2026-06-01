@@ -1,17 +1,20 @@
-import { Box, IconButton, Paper, Typography } from "@mui/material";
+import { Box, IconButton, Paper, Typography, useTheme } from "@mui/material";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { purple } from "./constants";
+import { mutedCardSx } from "../../theme/surfaces";
 
 export default function DataCard({ item, onEdit, onDelete }) {
+  const theme = useTheme();
+
   return (
     <Paper
       elevation={0}
       sx={{
-        minHeight: 210,
-        borderRadius: "18px",
-        bgcolor: "#f3f5fa",
-        px: 3,
-        py: 3.2,
+        minHeight: 190,
+        borderRadius: "14px",
+        ...mutedCardSx(theme),
+        px: 2.5,
+        py: 2.5,
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -25,18 +28,17 @@ export default function DataCard({ item, onEdit, onDelete }) {
       <Box>
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
           <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Typography sx={{ fontSize: 22, fontWeight: 700, color: "#07090f" }}>
+            <Typography sx={{ fontSize: 17, fontWeight: 700, color: "text.primary" }}>
               {item.title}
             </Typography>
             <Typography
               sx={{
-                mt: 1.6,
+                mt: 1.2,
                 maxWidth: 390,
-                minHeight: 54,
-                color: "#8a9099",
-                fontSize: 19,
-                lineHeight: 1.35,
-                fontWeight: 400,
+                minHeight: 44,
+                color: "text.secondary",
+                fontSize: 14,
+                lineHeight: 1.4,
               }}
             >
               {item.description}
@@ -63,13 +65,15 @@ export default function DataCard({ item, onEdit, onDelete }) {
               height: 38,
               px: 1.5,
               borderRadius: "7px",
-              bgcolor: "#fff",
+              bgcolor: "background.paper",
+              border: "1px solid",
+              borderColor: "divider",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#2a2d34",
-              fontSize: 16,
-              fontWeight: 700,
+              color: "text.primary",
+              fontSize: 13,
+              fontWeight: 600,
               whiteSpace: "nowrap",
             }}
           >

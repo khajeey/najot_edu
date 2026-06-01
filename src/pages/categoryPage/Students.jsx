@@ -38,6 +38,7 @@ import { useNavigate } from "react-router-dom";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import StudentDrawer from "./StudentDrawer";
 import { purple } from "./constants";
+import { pageTitleSx, panelPaperSx } from "../../theme/surfaces";
 
 const rowsPerPage = 5;
 
@@ -162,7 +163,7 @@ export default function Students() {
   return (
     <Box>
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.2 }}>
-        <Typography component="h1" sx={{ fontSize: 30, fontWeight: 700, color: "#10131a" }}>
+        <Typography component="h1" sx={pageTitleSx}>
           Talabalar
         </Typography>
         <Button
@@ -182,7 +183,7 @@ export default function Students() {
         Har bir Talaba ismi, fanlari va aloqa ma'lumotlari keltirilgan.
       </Typography>
 
-      <Paper elevation={0} sx={{ borderRadius: "13px", bgcolor: "#fff", overflow: "hidden", border: "1px solid #edf0f4" }}>
+      <Paper elevation={0} sx={{ ...panelPaperSx, borderRadius: "13px" }}>
         <Box sx={toolbarStyles}>
           <TextField
             placeholder="Search"
@@ -369,7 +370,7 @@ const toolbarButtonStyles = { height: 38, px: 1.8, borderRadius: "8px", borderCo
 const activeToolbarButtonStyles = { borderColor: "#d8cff5", bgcolor: "#f1edff", color: purple, "&:hover": { borderColor: "#c7b8f2", bgcolor: "#ebe4ff" } };
 const searchStyles = { width: 250, "& .MuiOutlinedInput-root": { height: 38, borderRadius: "8px", fontSize: 14, "& fieldset": { borderColor: "#e2e6ed" }, "&:hover fieldset": { borderColor: "#d5dae4" }, "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 } } };
 const filterPanelStyles = { px: 2, py: 2, borderBottom: "1px solid #edf0f4", display: "grid", gridTemplateColumns: "220px 220px auto", gap: 1.5, alignItems: "center", bgcolor: "#fbfcfe" };
-const filterFieldStyles = { "& .MuiOutlinedInput-root": { height: 40, borderRadius: "8px", bgcolor: "#fff", "& fieldset": { borderColor: "#dfe3eb" }, "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 } } };
+const filterFieldStyles = { "& .MuiOutlinedInput-root": { height: 40, borderRadius: "8px", bgcolor: "background.paper", "& fieldset": { borderColor: "divider" }, "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 } } };
 const clearButtonStyles = { justifySelf: "start", height: 40, px: 2, borderRadius: "8px", color: purple, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: "#f2edff" } };
 const headCellStyles = { height: 48, py: 0, color: "#858b95", fontSize: 13.5, fontWeight: 700, borderBottom: "1px solid #edf0f4" };
 const bodyCellStyles = { py: 0, color: "#39404c", fontSize: 13.5, borderBottom: "1px solid #edf0f4" };

@@ -1,18 +1,20 @@
-import { Box, IconButton, Paper, Typography } from "@mui/material";
+import { Box, IconButton, Paper, Typography, useTheme } from "@mui/material";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { purple } from "./constants";
+import { mutedCardSx } from "../../theme/surfaces";
 
 export default function RoomCard({ item, onEdit, onDelete }) {
+  const theme = useTheme();
+
   return (
     <Paper
       elevation={0}
       sx={{
-        minHeight: 112,
-        borderRadius: "16px",
-        border: "1px solid #dde1e9",
-        bgcolor: "#f3f5fa",
-        px: 3,
-        py: 2.6,
+        minHeight: 96,
+        borderRadius: "14px",
+        ...mutedCardSx(theme),
+        px: 2.5,
+        py: 2,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -24,10 +26,10 @@ export default function RoomCard({ item, onEdit, onDelete }) {
       }}
     >
       <Box>
-        <Typography sx={{ fontSize: 21, fontWeight: 700, color: "#07090f" }}>
+        <Typography sx={{ fontSize: 16, fontWeight: 700, color: "text.primary" }}>
           {item.title}
         </Typography>
-        <Typography sx={{ mt: 0.8, fontSize: 17, color: "#6f7580" }}>
+        <Typography sx={{ mt: 0.5, fontSize: 14, color: "text.secondary" }}>
           Sig'imi: {item.capacity}
         </Typography>
       </Box>

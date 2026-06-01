@@ -134,7 +134,7 @@ function StatsGrid({ items, isLoading }) {
                 <Typography sx={{ mt: 1.4, color: "text.secondary", fontSize: 16.5 }}>
                   {stat.label}
                 </Typography>
-                <Typography sx={{ mt: 1.4, fontSize: 30, lineHeight: 1, fontWeight: 700 }}>
+                <Typography sx={{ mt: 1.2, fontSize: 24, lineHeight: 1, fontWeight: 700 }}>
                   {stat.value}
                 </Typography>
               </>
@@ -174,7 +174,7 @@ function Panels() {
             },
           }}
         >
-          <Typography sx={{ fontSize: 20, fontWeight: 700 }}>{panel}</Typography>
+          <Typography sx={{ fontSize: 16, fontWeight: 700 }}>{panel}</Typography>
           <FiChevronDown size={25} color="#808892" />
         </Paper>
       ))}

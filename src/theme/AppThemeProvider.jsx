@@ -12,10 +12,6 @@ export function useColorMode() {
 
 const brandPurple = "#7456d8";
 
-const sharedTypography = {
-  fontFamily: '"Segoe UI", "Inter", Arial, sans-serif',
-};
-
 function buildTheme(mode) {
   const isDark = mode === "dark";
 
@@ -32,8 +28,24 @@ function buildTheme(mode) {
         secondary: isDark ? "#9aa3b2" : "#6b7280",
       },
       divider: isDark ? "#27314a" : "#e7e8ed",
+      action: {
+        hover: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+        selected: isDark ? "rgba(116, 86, 216, 0.2)" : "#eee8fb",
+      },
     },
-    typography: sharedTypography,
+    typography: {
+      fontFamily: '"Segoe UI", "Inter", Arial, sans-serif',
+      fontSize: 14,
+      h1: { fontSize: "1.5rem", fontWeight: 700 },
+      h2: { fontSize: "1.35rem", fontWeight: 700 },
+      h3: { fontSize: "1.2rem", fontWeight: 700 },
+      h4: { fontSize: "1.1rem", fontWeight: 700 },
+      h5: { fontSize: "1rem", fontWeight: 600 },
+      h6: { fontSize: "0.95rem", fontWeight: 600 },
+      body1: { fontSize: "0.9375rem" },
+      body2: { fontSize: "0.875rem" },
+      button: { fontSize: "0.875rem", textTransform: "none" },
+    },
     shape: { borderRadius: 10 },
     components: {
       MuiCssBaseline: {
@@ -48,6 +60,45 @@ function buildTheme(mode) {
         styleOverrides: {
           root: {
             backgroundImage: "none",
+          },
+        },
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            borderColor: theme.palette.divider,
+            color: theme.palette.text.primary,
+          }),
+          head: ({ theme }) => ({
+            backgroundColor: theme.palette.mode === "dark" ? "#1a2438" : "#fafbfc",
+            color: theme.palette.text.secondary,
+            fontSize: "0.8125rem",
+            fontWeight: 600,
+          }),
+        },
+      },
+      MuiTableRow: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            backgroundColor: theme.palette.background.paper,
+            "&:hover": {
+              backgroundColor: theme.palette.action.hover,
+            },
+          }),
+        },
+      },
+      MuiDrawer: {
+        styleOverrides: {
+          paper: ({ theme }) => ({
+            backgroundColor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+          }),
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            fontSize: "0.875rem",
           },
         },
       },

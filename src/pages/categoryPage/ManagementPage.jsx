@@ -157,7 +157,7 @@ export default function ManagementPage({ title }) {
     <Box>
       <Typography
         component="h1"
-        sx={{ mb: 2.7, fontSize: 30, lineHeight: 1.15, fontWeight: 700, color: "text.primary" }}
+        sx={{ mb: 2.2, fontSize: 22, lineHeight: 1.15, fontWeight: 700, color: "text.primary" }}
       >
         Boshqarish
       </Typography>
@@ -225,7 +225,7 @@ export default function ManagementPage({ title }) {
             mb: 3.8,
           }}
         >
-          <Typography sx={{ fontSize: 28, fontWeight: 700, color: "text.primary" }}>{title}</Typography>
+          <Typography sx={{ fontSize: 20, fontWeight: 700, color: "text.primary" }}>{title}</Typography>
           {!isStaffTab && (
             <Button
               startIcon={<FiPlus size={22} />}

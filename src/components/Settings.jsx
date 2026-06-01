@@ -23,7 +23,9 @@ export default function Settings({ onClose }) {
         width: 250,
         minHeight: "calc(100vh - 2px)",
         flexShrink: 0,
-        bgcolor: "#fff",
+        bgcolor: "background.paper",
+        borderRight: "1px solid",
+        borderColor: "divider",
         borderRadius: "0 14px 14px 0",
         boxShadow: "12px 0 28px rgba(21, 21, 27, 0.07)",
         px: 1.25,
@@ -31,7 +33,7 @@ export default function Settings({ onClose }) {
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.2, px: 0.8 }}>
-        <Typography sx={{ fontSize: 20, fontWeight: 700, color: "#23242b" }}>Boshqarish</Typography>
+        <Typography sx={{ fontSize: 16, fontWeight: 700, color: "text.primary" }}>Boshqarish</Typography>
         <IconButton
           aria-label="settings close"
           onClick={onClose}

@@ -25,6 +25,7 @@ import { FiArchive, FiEdit2, FiMoreVertical, FiPlus, FiTrash2, FiUsers } from "r
 import { FaUserGraduate, FaUserTie } from "react-icons/fa";
 import GroupDrawer from "./GroupDrawer";
 import { purple } from "./constants";
+import { pageTitleSx, panelPaperSx } from "../../theme/surfaces";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import { normalizeGroup } from "./groupUtils";
 
@@ -151,7 +152,7 @@ export default function Groups() {
   return (
     <Box>
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3.8 }}>
-        <Typography component="h1" sx={{ fontSize: 30, fontWeight: 700, color: "#10131a" }}>
+        <Typography component="h1" sx={pageTitleSx}>
           Guruhlar
         </Typography>
         {!archiveMode && (
@@ -200,7 +201,9 @@ export default function Groups() {
               sx={{
                 height: 140,
                 borderRadius: "12px",
-                bgcolor: "#fff",
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
                 px: 2.4,
                 py: 2.2,
                 display: "flex",
@@ -211,9 +214,9 @@ export default function Groups() {
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, color: "#90949b" }}>
                 <Icon size={26} color={purple} />
-                <Typography sx={{ fontSize: 17, color: "#8b8f97" }}>{card.label}</Typography>
+                <Typography sx={{ fontSize: 14, color: "text.secondary" }}>{card.label}</Typography>
               </Box>
-              <Typography sx={{ fontSize: 40, fontWeight: 800, color: "#17191f", lineHeight: 1 }}>
+              <Typography sx={{ fontSize: 28, fontWeight: 800, color: "text.primary", lineHeight: 1 }}>
                 {card.value}
               </Typography>
               <IconButton sx={{ position: "absolute", right: 12, top: 14, color: "#a6a9af" }}>
@@ -224,7 +227,7 @@ export default function Groups() {
         })}
       </Box>
 
-      <Paper elevation={0} sx={{ borderRadius: "12px", bgcolor: "#fff", overflow: "hidden" }}>
+      <Paper elevation={0} sx={panelPaperSx}>
         <Table sx={{ minWidth: 1280 }}>
           <TableHead>
             <TableRow>

@@ -38,6 +38,7 @@ import { useNavigate } from "react-router-dom";
 import TeacherDrawer from "./TeacherDrawer";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import { purple } from "./constants";
+import { pageTitleSx, panelPaperSx } from "../../theme/surfaces";
 
 export default function Teachers() {
   const navigate = useNavigate();
@@ -173,7 +174,7 @@ export default function Teachers() {
   return (
     <Box>
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.8 }}>
-        <Typography component="h1" sx={{ fontSize: 30, fontWeight: 700, color: "#10131a" }}>
+        <Typography component="h1" sx={pageTitleSx}>
           O'qituvchilar
         </Typography>
         <Button
@@ -200,7 +201,7 @@ export default function Teachers() {
         Har bir o'qituvchining ismi, fanlari va aloqa ma'lumotlari keltirilgan.
       </Typography>
 
-      <Paper elevation={0} sx={{ borderRadius: "13px", bgcolor: "#fff", overflow: "hidden" }}>
+      <Paper elevation={0} sx={{ ...panelPaperSx, borderRadius: "13px" }}>
         <Box
           sx={{
             height: 82,
@@ -318,7 +319,7 @@ export default function Teachers() {
 
         <Table sx={{ minWidth: 1120 }}>
           <TableHead>
-            <TableRow sx={{ bgcolor: "#fff" }}>
+            <TableRow>
               <TableCell padding="checkbox" sx={headCellStyles}>
                 <Checkbox size="small" />
               </TableCell>

@@ -136,7 +136,7 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
           sx={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }}
         />
         {!collapsed && (
-          <Typography sx={{ color: purple, fontSize: 22, fontWeight: 700, letterSpacing: 0 }}>
+          <Typography sx={{ color: purple, fontSize: 18, fontWeight: 700, letterSpacing: 0 }}>
             NajotEdu
           </Typography>
         )}
@@ -213,7 +213,7 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
                 <Icon size={20} />
                 {!collapsed && (
                   <>
-                    <Typography sx={{ flex: 1, fontSize: 17, fontWeight: 600 }}>
+                    <Typography sx={{ flex: 1, fontSize: 15, fontWeight: 600 }}>
                       {item.label}
                     </Typography>
                     {item.arrow &&
@@ -312,10 +312,10 @@ function Topbar() {
             borderRadius: "11px",
             bgcolor: purple,
             color: "#fff",
-            fontSize: 17,
-            fontWeight: 700,
+            fontSize: 14,
+            fontWeight: 600,
             textTransform: "none",
-            minWidth: 174,
+            minWidth: 150,
             "&:hover": { bgcolor: "#684bcf" },
           }}
         >
@@ -362,7 +362,7 @@ function Topbar() {
             height: 47,
             bgcolor: "background.paper",
             borderRadius: "11px",
-            fontSize: 18,
+            fontSize: 14,
             color: "text.primary",
             "& fieldset": { borderColor: "divider" },
             "& .MuiSelect-select": { display: "flex", alignItems: "center", py: 0, pl: 2 },
