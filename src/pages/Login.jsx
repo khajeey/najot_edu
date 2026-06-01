@@ -12,25 +12,62 @@ import {
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import tatuLogo from "../assets/tatu.png";
+import { api, getApiErrorMessage } from "../api/axiosClient";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success");
+  const [isLoading, setIsLoading] = useState(false);
+  const [form, setForm] = useState({
+    phone: "998975661099",
+    password: "Benazir99!",
+  });
   const timerRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setShowAlert(true);
+    setIsLoading(true);
+    setShowAlert(false);
 
-    timerRef.current = setTimeout(() => {
-      setShowAlert(false);
-      navigate("/dashboard");
-    }, 2000);
+    try {
+      const { data } = await api.post("/auth/login", form);
+
+      if (!data.success) {
+        throw new Error(data.message || "Login bajarilmadi");
+      }
+
+      localStorage.setItem("accessToken", data.accessToken);
+      setAlertSeverity("success");
+      setAlertMessage(data.message || "Login muvaffaqiyatli bajarildi");
+      setShowAlert(true);
+
+      timerRef.current = setTimeout(() => {
+        setShowAlert(false);
+        navigate("/dashboard");
+      }, 700);
+    } catch (error) {
+      setAlertSeverity("error");
+      setAlertMessage(getApiErrorMessage(error, "Server bilan bog'lanishda xatolik"));
+      setShowAlert(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateField = (field, value) => {
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
   };
 
   useEffect(() => {
-    return () => clearTimeout(timerRef.current);
+    return () => {
+      clearTimeout(timerRef.current);
+    };
   }, []);
 
   return (
@@ -97,11 +134,13 @@ export default function Login() {
           </Typography>
 
           <TextField
-            label="Login"
-            placeholder="Loginni kiriting"
+            label="Telefon"
+            placeholder="Telefon raqamni kiriting"
             variant="outlined"
             fullWidth
             size="small"
+            value={form.phone}
+            onChange={(event) => updateField("phone", event.target.value)}
             InputLabelProps={{ shrink: true }}
             sx={fieldStyles}
           />
@@ -112,6 +151,8 @@ export default function Login() {
             variant="outlined"
             fullWidth
             size="small"
+            value={form.password}
+            onChange={(event) => updateField("password", event.target.value)}
             type={showPassword ? "text" : "password"}
             InputLabelProps={{ shrink: true }}
             sx={fieldStyles}
@@ -136,6 +177,7 @@ export default function Login() {
             variant="contained"
             disableElevation
             fullWidth
+            disabled={isLoading}
             sx={{
               height: 38,
               mt: 0.5,
@@ -149,7 +191,7 @@ export default function Login() {
               },
             }}
           >
-            Kirish
+            {isLoading ? "Kirilmoqda..." : "Kirish"}
           </Button>
         </Box>
 
@@ -171,8 +213,8 @@ export default function Login() {
           open={showAlert}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          <Alert severity="success" variant="filled" sx={{ width: "100%" }}>
-            Login muvaffaqiyatli bajarildi
+          <Alert severity={alertSeverity} variant="filled" sx={{ width: "100%" }}>
+            {alertMessage}
           </Alert>
         </Snackbar>
       </section>

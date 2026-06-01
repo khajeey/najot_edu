@@ -2,7 +2,7 @@ import { Box, IconButton, Paper, Typography } from "@mui/material";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { purple } from "./constants";
 
-export default function DataCard({ item }) {
+export default function DataCard({ item, onEdit, onDelete }) {
   return (
     <Paper
       elevation={0}
@@ -44,10 +44,10 @@ export default function DataCard({ item }) {
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, pt: 4.7, flexShrink: 0 }}>
-            <IconButton aria-label="delete" sx={cardActionButton}>
+            <IconButton aria-label="delete" onClick={onDelete} sx={cardActionButton}>
               <FiTrash2 size={22} />
             </IconButton>
-            <IconButton aria-label="edit" sx={cardActionButton}>
+            <IconButton aria-label="edit" onClick={onEdit} sx={cardActionButton}>
               <FiEdit2 size={22} />
             </IconButton>
           </Box>

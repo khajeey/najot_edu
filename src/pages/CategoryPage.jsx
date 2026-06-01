@@ -624,4 +624,3 @@ const textareaStyles = {
     opacity: 1,
   },
 };
-1

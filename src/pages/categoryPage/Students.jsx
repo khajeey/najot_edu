@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
   InputAdornment,
+  MenuItem,
   Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -30,48 +34,129 @@ import {
   FiSearch,
   FiTrash2,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { api, getApiErrorMessage } from "../../api/axiosClient";
 import StudentDrawer from "./StudentDrawer";
 import { purple } from "./constants";
 
-const initialStudents = [
-  { id: 1, name: "Ali Valiyev", groups: ["N26", "n105"], phone: "+998976541223", email: "ali@gmail.com", birthDate: "12.12.2010", address: "Sirdaryo", createdAt: "12.05.2026" },
-  { id: 2, name: "Salim Qodirov", groups: ["n105"], phone: "+998977777777", email: "salim@gmail.com", birthDate: "14.01.2007", address: "Buxoro", createdAt: "14.05.2026" },
-  { id: 3, name: "Bobur", groups: ["n105"], phone: "+998999999999", email: "bobur@gmail.com", birthDate: "14.03.2002", address: "Toshkent", createdAt: "14.05.2026" },
-  { id: 4, name: "Qodir Salimov", groups: ["n105"], phone: "+998911111111", email: "qodir@gmail.com", birthDate: "29.04.2026", address: "O'zbekcha", createdAt: "14.05.2026" },
-];
+const rowsPerPage = 5;
 
 export default function Students() {
+  const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [deletingStudent, setDeletingStudent] = useState(null);
   const [viewingStudent, setViewingStudent] = useState(null);
-  const [students, setStudents] = useState(initialStudents);
+  const [students, setStudents] = useState([]);
+  const [archiveMode, setArchiveMode] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [filters, setFilters] = useState({ group: "", address: "" });
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [saveError, setSaveError] = useState("");
 
-  const handleSave = (student) => {
-    setStudents((current) => {
-      if (student.id) {
-        return current.map((item) => item.id === student.id ? { ...item, ...student } : item);
+  const fetchStudents = async (showArchive = archiveMode) => {
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const { data } = await api.get(showArchive ? "/students/archive" : "/students");
+
+      if (!data.success) {
+        throw new Error(data.message || "Talabalarni yuklashda xatolik");
       }
 
-      return [{ id: Date.now(), ...student }, ...current];
-    });
-    setEditingStudent(null);
-    setDrawerOpen(false);
+      setStudents(data.data.map(normalizeStudent));
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, "Server bilan bog'lanishda xatolik"));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const openCreateDrawer = () => {
-    setEditingStudent(null);
-    setDrawerOpen(true);
+  useEffect(() => {
+    setPage(1);
+    fetchStudents(archiveMode);
+  }, [archiveMode]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchValue, filters.group, filters.address]);
+
+  const groupOptions = [...new Set(students.flatMap((student) => student.groups))].filter(Boolean);
+  const addressOptions = [...new Set(students.map((student) => student.address))].filter(Boolean);
+  const filteredStudents = students.filter((student) => {
+    const search = searchValue.trim().toLowerCase();
+    const matchesSearch = !search
+      || student.name.toLowerCase().includes(search)
+      || student.phone.toLowerCase().includes(search)
+      || student.email.toLowerCase().includes(search);
+    const matchesGroup = !filters.group || student.groups.includes(filters.group);
+    const matchesAddress = !filters.address || student.address === filters.address;
+
+    return matchesSearch && matchesGroup && matchesAddress;
+  });
+  const totalPages = Math.max(1, Math.ceil(filteredStudents.length / rowsPerPage));
+  const safePage = Math.min(page, totalPages);
+  const visibleStudents = filteredStudents.slice((safePage - 1) * rowsPerPage, safePage * rowsPerPage);
+
+  const handleSave = async (student) => {
+    try {
+      setSaveError("");
+      const formData = new FormData();
+
+      formData.append("full_name", student.name);
+      formData.append("email", student.email);
+      formData.append("phone", student.phone);
+      formData.append("address", student.address);
+      formData.append("birth_date", student.birthDateRaw);
+
+      if (student.password) {
+        formData.append("password", student.password);
+      } else if (!student.id) {
+        formData.append("password", "Benazir99!");
+      }
+
+      if (student.photo) {
+        formData.append("photo", student.photo);
+      }
+
+      student.groupIds.forEach((groupId) => {
+        formData.append("groups", String(groupId));
+      });
+
+      const { data } = student.id
+        ? await api.patch(`/students/${student.id}`, formData)
+        : await api.post("/students", formData);
+
+      if (!data.success) {
+        throw new Error(data.message || "Talabani saqlashda xatolik");
+      }
+
+      setEditingStudent(null);
+      setDrawerOpen(false);
+      await fetchStudents(archiveMode);
+    } catch (error) {
+      setSaveError(getApiErrorMessage(error, "Talabani saqlashda xatolik"));
+    }
   };
 
-  const openEditDrawer = (student) => {
-    setEditingStudent(student);
-    setDrawerOpen(true);
-  };
+  const handleDelete = async () => {
+    try {
+      setSaveError("");
+      const { data } = await api.delete(`/students/${deletingStudent.id}`);
 
-  const handleDelete = () => {
-    setStudents((current) => current.filter((student) => student.id !== deletingStudent.id));
-    setDeletingStudent(null);
+      if (!data.success) {
+        throw new Error(data.message || "Talabani o'chirishda xatolik");
+      }
+
+      setDeletingStudent(null);
+      await fetchStudents(archiveMode);
+    } catch (error) {
+      setSaveError(getApiErrorMessage(error, "Talabani o'chirishda xatolik"));
+    }
   };
 
   return (
@@ -80,7 +165,14 @@ export default function Students() {
         <Typography component="h1" sx={{ fontSize: 30, fontWeight: 700, color: "#10131a" }}>
           Talabalar
         </Typography>
-        <Button startIcon={<FiPlus size={21} />} onClick={openCreateDrawer} sx={primaryButtonStyles}>
+        <Button
+          startIcon={<FiPlus size={21} />}
+          onClick={() => {
+            setEditingStudent(null);
+            setDrawerOpen(true);
+          }}
+          sx={primaryButtonStyles}
+        >
           Talaba qo'shish
         </Button>
       </Box>
@@ -94,14 +186,46 @@ export default function Students() {
         <Box sx={toolbarStyles}>
           <TextField
             placeholder="Search"
+            value={searchValue}
+            onChange={(event) => setSearchValue(event.target.value)}
             sx={searchStyles}
             InputProps={{ startAdornment: <InputAdornment position="start"><FiSearch size={19} color="#a0a5ad" /></InputAdornment> }}
           />
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Button startIcon={<FiFilter />} variant="outlined" sx={toolbarButtonStyles}>Filters</Button>
-            <Button startIcon={<FiArchive />} variant="outlined" sx={toolbarButtonStyles}>Arxiv</Button>
+            <Button
+              startIcon={<FiFilter />}
+              variant="outlined"
+              onClick={() => setFilterOpen((value) => !value)}
+              sx={{ ...toolbarButtonStyles, ...(filterOpen ? activeToolbarButtonStyles : {}) }}
+            >
+              Filters
+            </Button>
+            <Button
+              startIcon={<FiArchive />}
+              variant="outlined"
+              onClick={() => setArchiveMode((value) => !value)}
+              sx={{ ...toolbarButtonStyles, ...(archiveMode ? activeToolbarButtonStyles : {}) }}
+            >
+              {archiveMode ? "Faollar" : "Arxiv"}
+            </Button>
           </Box>
         </Box>
+
+        <Collapse in={filterOpen}>
+          <Box sx={filterPanelStyles}>
+            <TextField select label="Guruh" size="small" value={filters.group} onChange={(event) => setFilters((current) => ({ ...current, group: event.target.value }))} sx={filterFieldStyles}>
+              <MenuItem value="">Hammasi</MenuItem>
+              {groupOptions.map((group) => <MenuItem key={group} value={group}>{group}</MenuItem>)}
+            </TextField>
+            <TextField select label="Manzil" size="small" value={filters.address} onChange={(event) => setFilters((current) => ({ ...current, address: event.target.value }))} sx={filterFieldStyles}>
+              <MenuItem value="">Hammasi</MenuItem>
+              {addressOptions.map((address) => <MenuItem key={address} value={address}>{address}</MenuItem>)}
+            </TextField>
+            <Button onClick={() => { setFilters({ group: "", address: "" }); setSearchValue(""); }} sx={clearButtonStyles}>
+              Tozalash
+            </Button>
+          </Box>
+        </Collapse>
 
         <Table sx={{ minWidth: 1120 }}>
           <TableHead>
@@ -118,13 +242,22 @@ export default function Students() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {students.map((student) => (
+            {visibleStudents.map((student) => (
               <TableRow key={student.id} sx={{ height: 54 }}>
                 <TableCell padding="checkbox" sx={bodyCellStyles}><Checkbox size="small" /></TableCell>
                 <TableCell sx={bodyCellStyles}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
-                    <Box sx={avatarStyles}>{student.name.charAt(0)}</Box>
-                    <Typography sx={{ fontSize: 14, fontWeight: 700, color: "#20232a" }}>{student.name}</Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.2,
+                      cursor: "pointer",
+                      "&:hover .student-name": { color: purple },
+                    }}
+                    onClick={() => navigate(`/students/${student.id}`)}
+                  >
+                    {student.avatar ? <Box component="img" src={student.avatar} alt={student.name} sx={imageAvatarStyles} /> : <Box sx={avatarStyles}>{student.name.charAt(0)}</Box>}
+                    <Typography className="student-name" sx={{ fontSize: 14, fontWeight: 700, color: "#20232a" }}>{student.name}</Typography>
                   </Box>
                 </TableCell>
                 <TableCell sx={bodyCellStyles}><Box sx={{ display: "flex", gap: 0.6 }}>{student.groups.map((group) => <Box key={group} sx={groupBadgeStyles}>{group}</Box>)}</Box></TableCell>
@@ -135,30 +268,69 @@ export default function Students() {
                 <TableCell sx={bodyCellStyles}>{student.createdAt}</TableCell>
                 <TableCell align="right" sx={bodyCellStyles}>
                   <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.8 }}>
-                    <IconButton aria-label="view" onClick={() => setViewingStudent(student)} sx={actionButtonStyles}><FiEye size={16} /></IconButton>
+                    <IconButton aria-label="view" onClick={() => navigate(`/students/${student.id}`)} sx={actionButtonStyles}><FiEye size={16} /></IconButton>
                     <IconButton aria-label="delete" onClick={() => setDeletingStudent(student)} sx={actionButtonStyles}><FiTrash2 size={16} /></IconButton>
-                    <IconButton aria-label="edit" onClick={() => openEditDrawer(student)} sx={actionButtonStyles}><FiEdit2 size={16} /></IconButton>
+                    <IconButton aria-label="edit" onClick={() => { setEditingStudent(student); setDrawerOpen(true); }} sx={actionButtonStyles}><FiEdit2 size={16} /></IconButton>
                   </Box>
                 </TableCell>
               </TableRow>
             ))}
+            {!isLoading && !errorMessage && filteredStudents.length === 0 && (
+              <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5, color: "#6b7280" }}>{archiveMode ? "Arxivdagi talabalar topilmadi" : "Talabalar topilmadi"}</TableCell></TableRow>
+            )}
+            {isLoading && <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5, color: "#6b7280" }}>Yuklanmoqda...</TableCell></TableRow>}
+            {errorMessage && <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5, color: "#ef4444" }}>{errorMessage}</TableCell></TableRow>}
           </TableBody>
         </Table>
 
         <Box sx={paginationStyles}>
-          <Button startIcon={<FiArrowLeft />} sx={paginationSideButton}>Previous</Button>
+          <Button startIcon={<FiArrowLeft />} disabled={safePage === 1} onClick={() => setPage((value) => Math.max(1, value - 1))} sx={paginationSideButton}>Previous</Button>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {["1", "2", "3", "...", "8", "9", "10"].map((page) => <Box key={page} sx={{ ...pageButtonStyles, ...(page === "1" ? activePageStyles : {}) }}>{page}</Box>)}
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+              <Box key={pageNumber} onClick={() => setPage(pageNumber)} sx={{ ...pageButtonStyles, ...(safePage === pageNumber ? activePageStyles : {}) }}>{pageNumber}</Box>
+            ))}
           </Box>
-          <Button endIcon={<FiArrowRight />} sx={paginationSideButton}>Next</Button>
+          <Button endIcon={<FiArrowRight />} disabled={safePage === totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))} sx={paginationSideButton}>Next</Button>
         </Box>
       </Paper>
 
       <StudentDrawer open={drawerOpen} initialData={editingStudent} onClose={() => { setDrawerOpen(false); setEditingStudent(null); }} onSave={handleSave} />
       <ConfirmDialog open={Boolean(deletingStudent)} title="Talabani o'chirish" text={`${deletingStudent?.name || ""} ma'lumotini o'chirishni tasdiqlaysizmi?`} onClose={() => setDeletingStudent(null)} onConfirm={handleDelete} />
       <InfoDialog open={Boolean(viewingStudent)} title="Talaba ma'lumotlari" item={viewingStudent} onClose={() => setViewingStudent(null)} />
+
+      <Snackbar open={Boolean(saveError)} autoHideDuration={4000} onClose={() => setSaveError("")} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+        <Alert severity="error" variant="filled" onClose={() => setSaveError("")}>{saveError}</Alert>
+      </Snackbar>
     </Box>
   );
+}
+
+function normalizeStudent(student) {
+  const groups = student.groups || [];
+
+  return {
+    id: student.id,
+    name: student.full_name || "",
+    avatar: student.photo ? `https://najot-edu.softwareengineer.uz/${student.photo}` : "",
+    groupIds: groups.map((group) => group.id).filter(Boolean),
+    groups: groups.map((group) => group.name).filter(Boolean),
+    phone: student.phone || "",
+    email: student.email || "",
+    birthDateRaw: toInputDate(student.birth_date),
+    birthDate: formatDate(student.birth_date),
+    address: student.address || "",
+    createdAt: formatDate(student.created_at),
+  };
+}
+
+function toInputDate(value) {
+  if (!value) return "";
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+function formatDate(value) {
+  if (!value) return "";
+  return new Intl.DateTimeFormat("uz-UZ", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(value));
 }
 
 function ConfirmDialog({ open, title, text, onClose, onConfirm }) {
@@ -194,13 +366,18 @@ function InfoDialog({ open, title, item, onClose }) {
 const primaryButtonStyles = { height: 46, px: 2.7, borderRadius: "8px", bgcolor: purple, color: "#fff", fontSize: 17, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: "#684bcf" } };
 const toolbarStyles = { height: 66, px: 2, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #edf0f4" };
 const toolbarButtonStyles = { height: 38, px: 1.8, borderRadius: "8px", borderColor: "#dfe3eb", color: "#26313f", fontSize: 14, fontWeight: 700, textTransform: "none", "&:hover": { borderColor: "#cfd6e2", bgcolor: "#fafbfc" } };
+const activeToolbarButtonStyles = { borderColor: "#d8cff5", bgcolor: "#f1edff", color: purple, "&:hover": { borderColor: "#c7b8f2", bgcolor: "#ebe4ff" } };
 const searchStyles = { width: 250, "& .MuiOutlinedInput-root": { height: 38, borderRadius: "8px", fontSize: 14, "& fieldset": { borderColor: "#e2e6ed" }, "&:hover fieldset": { borderColor: "#d5dae4" }, "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 } } };
+const filterPanelStyles = { px: 2, py: 2, borderBottom: "1px solid #edf0f4", display: "grid", gridTemplateColumns: "220px 220px auto", gap: 1.5, alignItems: "center", bgcolor: "#fbfcfe" };
+const filterFieldStyles = { "& .MuiOutlinedInput-root": { height: 40, borderRadius: "8px", bgcolor: "#fff", "& fieldset": { borderColor: "#dfe3eb" }, "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 } } };
+const clearButtonStyles = { justifySelf: "start", height: 40, px: 2, borderRadius: "8px", color: purple, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: "#f2edff" } };
 const headCellStyles = { height: 48, py: 0, color: "#858b95", fontSize: 13.5, fontWeight: 700, borderBottom: "1px solid #edf0f4" };
 const bodyCellStyles = { py: 0, color: "#39404c", fontSize: 13.5, borderBottom: "1px solid #edf0f4" };
 const avatarStyles = { width: 34, height: 34, borderRadius: "50%", bgcolor: "#f0eafb", color: purple, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 };
+const imageAvatarStyles = { width: 34, height: 34, borderRadius: "50%", objectFit: "cover", bgcolor: "#f4f5f7" };
 const groupBadgeStyles = { height: 26, px: 0.9, borderRadius: "7px", bgcolor: "#f4f4f5", display: "flex", alignItems: "center", color: "#424854", fontSize: 12 };
 const actionButtonStyles = { width: 26, height: 26, color: "#818892", "&:hover": { bgcolor: "#f2f0fb", color: purple } };
 const paginationStyles = { height: 68, px: 2.5, borderTop: "1px solid #edf0f4", display: "flex", alignItems: "center", justifyContent: "space-between" };
 const paginationSideButton = { color: "#4d5662", fontSize: 14, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: "#f6f7f9" } };
-const pageButtonStyles = { width: 34, height: 34, borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "#59606b", fontSize: 14 };
+const pageButtonStyles = { width: 34, height: 34, borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "#59606b", fontSize: 14, cursor: "pointer" };
 const activePageStyles = { bgcolor: purple, color: "#fff", fontWeight: 700 };

@@ -2,7 +2,7 @@ import { Box, IconButton, Paper, Typography } from "@mui/material";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { purple } from "./constants";
 
-export default function RoomCard({ item }) {
+export default function RoomCard({ item, onEdit, onDelete }) {
   return (
     <Paper
       elevation={0}
@@ -33,10 +33,10 @@ export default function RoomCard({ item }) {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.3 }}>
-        <IconButton aria-label="delete" sx={{ ...actionButton, color: "#cf2029" }}>
+        <IconButton aria-label="delete" onClick={onDelete} sx={{ ...actionButton, color: "#cf2029" }}>
           <FiTrash2 size={22} />
         </IconButton>
-        <IconButton aria-label="edit" sx={actionButton}>
+        <IconButton aria-label="edit" onClick={onEdit} sx={actionButton}>
           <FiEdit2 size={22} />
         </IconButton>
       </Box>

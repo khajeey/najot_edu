@@ -9,6 +9,7 @@ import {
   Select,
   Tooltip,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -27,14 +28,15 @@ import {
   FaGift,
   FaLayerGroup,
   FaMoon,
+  FaSun,
   FaUserGraduate,
   FaUserTie,
 } from "react-icons/fa";
-import educoinLogo from "../assets/educoin.png";
+import brandLogo from "../assets/educoin.png";
+import { useColorMode } from "../theme/AppThemeProvider";
 import Settings from "./Settings";
 
 const purple = "#7456d8";
-const pageBg = "#f4f4f5";
 
 const menuItems = [
   { label: "Asosiy", path: "/dashboard", icon: FiHome },
@@ -48,6 +50,7 @@ const menuItems = [
 export default function MainLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const theme = useTheme();
   const [settingsOpen, setSettingsOpen] = useState(location.pathname.startsWith("/dashboard/boshqarish"));
   const showSettings = settingsOpen;
 
@@ -59,11 +62,11 @@ export default function MainLayout() {
     <Box
       sx={{
         minHeight: "100vh",
-        bgcolor: pageBg,
+        bgcolor: "background.default",
         display: "flex",
-        color: "#15151b",
-        fontFamily: '"Segoe UI", "Inter", Arial, sans-serif',
-        borderTop: "2px solid #233333",
+        color: "text.primary",
+        fontFamily: theme.typography.fontFamily,
+        borderTop: (t) => (t.palette.mode === "dark" ? "2px solid #1f2937" : "2px solid #233333"),
       }}
     >
       <Sidebar
@@ -72,9 +75,7 @@ export default function MainLayout() {
         onOpenSettings={() => setSettingsOpen(true)}
         onToggle={() => setCollapsed((value) => !value)}
       />
-      {showSettings && (
-        <Settings onClose={() => setSettingsOpen(false)} />
-      )}
+      {showSettings && <Settings onClose={() => setSettingsOpen(false)} />}
 
       <Box
         component="main"
@@ -95,6 +96,8 @@ export default function MainLayout() {
 function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
 
   return (
     <Paper
@@ -104,13 +107,15 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
         width: collapsed ? 86 : 325,
         minHeight: "calc(100vh - 2px)",
         flexShrink: 0,
-        bgcolor: "#fff",
+        bgcolor: "background.paper",
         borderRadius: settingsOpen ? 0 : "0 22px 22px 0",
         display: { xs: "none", md: "flex" },
         flexDirection: "column",
         position: "relative",
         overflow: "visible",
         transition: "width 220ms ease",
+        borderRight: "1px solid",
+        borderColor: "divider",
       }}
     >
       <Box
@@ -126,13 +131,13 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
       >
         <Box
           component="img"
-          src={educoinLogo}
-          alt="EduCoin"
+          src={brandLogo}
+          alt="NajotEdu"
           sx={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }}
         />
         {!collapsed && (
           <Typography sx={{ color: purple, fontSize: 22, fontWeight: 700, letterSpacing: 0 }}>
-            EduCoin
+            NajotEdu
           </Typography>
         )}
       </Box>
@@ -161,7 +166,7 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
           const Icon = item.icon;
           const active = item.settings
             ? location.pathname.startsWith("/dashboard/boshqarish") || settingsOpen
-            : location.pathname === item.path;
+            : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
 
           const handleClick = () => {
             if (item.settings) {
@@ -194,13 +199,13 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
                   alignItems: "center",
                   justifyContent: collapsed ? "center" : "flex-start",
                   gap: 2,
-                  bgcolor: active ? "#eee8fb" : "transparent",
-                  color: active ? purple : "#4c515b",
+                  bgcolor: active ? (isDark ? "#252f47" : "#eee8fb") : "transparent",
+                  color: active ? purple : "text.secondary",
                   cursor: "pointer",
                   outline: "none",
                   transition: "background-color 160ms ease, color 160ms ease",
                   "&:hover": {
-                    bgcolor: active ? "#eee8fb" : "#f5f2ff",
+                    bgcolor: active ? (isDark ? "#252f47" : "#eee8fb") : "action.hover",
                     color: purple,
                   },
                 }}
@@ -211,11 +216,12 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
                     <Typography sx={{ flex: 1, fontSize: 17, fontWeight: 600 }}>
                       {item.label}
                     </Typography>
-                    {item.arrow && (
-                      settingsOpen || location.pathname.startsWith("/dashboard/boshqarish")
-                        ? <FiChevronDown size={22} color={purple} />
-                        : <FiChevronRight size={22} color="#9aa0a8" />
-                    )}
+                    {item.arrow &&
+                      (settingsOpen || location.pathname.startsWith("/dashboard/boshqarish") ? (
+                        <FiChevronDown size={22} color={purple} />
+                      ) : (
+                        <FiChevronRight size={22} color="#9aa0a8" />
+                      ))}
                   </>
                 )}
               </Box>
@@ -234,8 +240,9 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
             px: 2,
             py: 2,
             borderRadius: "14px",
-            border: "1px solid #ffcfcf",
-            bgcolor: "#fff0f0",
+            border: "1px solid",
+            borderColor: isDark ? "#4a2f2f" : "#ffcfcf",
+            bgcolor: isDark ? "#2a1f1f" : "#fff0f0",
             display: "grid",
             gridTemplateColumns: "36px 1fr",
             columnGap: 1.6,
@@ -243,7 +250,7 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
             alignItems: "center",
           }}
         >
-          <Box sx={{ gridRow: "1 / span 2", color: "#000", display: "flex", justifyContent: "center" }}>
+          <Box sx={{ gridRow: "1 / span 2", color: "text.primary", display: "flex", justifyContent: "center" }}>
             <FiBell size={34} fill="#ffd047" strokeWidth={2.2} />
           </Box>
           <Box>
@@ -276,6 +283,10 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
 }
 
 function Topbar() {
+  const theme = useTheme();
+  const { mode, toggleColorMode } = useColorMode();
+  const isDark = theme.palette.mode === "dark";
+
   return (
     <Box
       sx={{
@@ -288,7 +299,7 @@ function Topbar() {
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.4, minWidth: 0 }}>
-        <IconButton aria-label="calendar" sx={whiteIconButton}>
+        <IconButton aria-label="calendar" sx={surfaceIconButton}>
           <FiCalendar size={22} />
         </IconButton>
 
@@ -319,7 +330,9 @@ function Topbar() {
             ml: 0.1,
             px: 1.7,
             borderRadius: "10px",
-            bgcolor: "#fff",
+            bgcolor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
             display: "flex",
             alignItems: "center",
             gap: 1.2,
@@ -332,8 +345,8 @@ function Topbar() {
               flex: 1,
               minWidth: 0,
               fontSize: 16,
-              color: "#4f5560",
-              "& input::placeholder": { color: "#8d929b", opacity: 1 },
+              color: "text.primary",
+              "& input::placeholder": { color: "text.secondary", opacity: 1 },
             }}
           />
         </Paper>
@@ -347,43 +360,52 @@ function Topbar() {
           sx={{
             width: 190,
             height: 47,
-            bgcolor: "#fff",
+            bgcolor: "background.paper",
             borderRadius: "11px",
             fontSize: 18,
-            color: "#000",
-            "& fieldset": { borderColor: "#c8c8c8" },
+            color: "text.primary",
+            "& fieldset": { borderColor: "divider" },
             "& .MuiSelect-select": { display: "flex", alignItems: "center", py: 0, pl: 2 },
-            "& .MuiSelect-icon": { right: 14, color: "#777", fontSize: 22 },
+            "& .MuiSelect-icon": { right: 14, color: "text.secondary", fontSize: 22 },
           }}
         >
           <MenuItem value="uz">O'zbekcha</MenuItem>
         </Select>
 
-        <IconButton sx={whiteIconButton}>
+        <IconButton sx={surfaceIconButton}>
           <FiBell size={22} />
         </IconButton>
         <IconButton
+          aria-label="toggle theme"
+          onClick={toggleColorMode}
           sx={{
-            ...whiteIconButton,
-            bgcolor: "#303d59",
-            color: "#fff",
-            "&:hover": { bgcolor: "#303d59" },
+            ...surfaceIconButton,
+            bgcolor: isDark ? "#fbbf24" : "#303d59",
+            color: isDark ? "#1f2937" : "#fff",
+            "&:hover": {
+              bgcolor: isDark ? "#f59e0b" : "#303d59",
+            },
           }}
         >
-          <FaMoon size={21} />
+          {isDark ? <FaSun size={21} /> : <FaMoon size={21} />}
         </IconButton>
-        <Box component="img" src={educoinLogo} alt="EduCoin" sx={{ width: 43, height: 43, objectFit: "contain" }} />
+        <Tooltip title="NajotEdu">
+          <Box component="img" src={brandLogo} alt="NajotEdu" sx={{ width: 43, height: 43, objectFit: "contain" }} />
+        </Tooltip>
       </Box>
     </Box>
   );
 }
 
-const whiteIconButton = {
+const surfaceIconButton = {
   width: 48,
   height: 48,
-  bgcolor: "#fff",
+  bgcolor: "background.paper",
   borderRadius: "11px",
-  color: "#172032",
-  boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
-  "&:hover": { bgcolor: "#f7f7fb" },
+  color: "text.primary",
+  border: "1px solid",
+  borderColor: "divider",
+  boxShadow: (theme) =>
+    theme.palette.mode === "dark" ? "none" : "0 1px 8px rgba(0,0,0,0.06)",
+  "&:hover": { bgcolor: "action.hover" },
 };

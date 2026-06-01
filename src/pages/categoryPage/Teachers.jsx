@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
   Checkbox,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
   InputAdornment,
+  MenuItem,
   Paper,
   Table,
   TableBody,
@@ -17,6 +19,8 @@ import {
   TableRow,
   TextField,
   Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   FiArchive,
@@ -30,46 +34,114 @@ import {
   FiSearch,
   FiTrash2,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import TeacherDrawer from "./TeacherDrawer";
+import { api, getApiErrorMessage } from "../../api/axiosClient";
 import { purple } from "./constants";
 
-const initialTeachers = [
-  {
-    id: 1,
-    name: "sardor",
-    avatar: "",
-    groups: ["N105", "just"],
-    phone: "940027685",
-    email: "sardor@gmail.com",
-    address: "Toshkent",
-    createdAt: "31.05.2026",
-  },
-];
-
 export default function Teachers() {
+  const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState(null);
   const [deletingTeacher, setDeletingTeacher] = useState(null);
   const [viewingTeacher, setViewingTeacher] = useState(null);
-  const [teachers, setTeachers] = useState(initialTeachers);
+  const [teachers, setTeachers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [archiveMode, setArchiveMode] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [filters, setFilters] = useState({
+    group: "",
+    address: "",
+  });
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 5;
 
-  const handleSave = (teacher) => {
-    setTeachers((current) => {
-      if (teacher.id) {
-        return current.map((item) => item.id === teacher.id ? { ...item, ...teacher } : item);
+  const fetchTeachers = async (showArchive = archiveMode) => {
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const { data } = await api.get(showArchive ? "/teachers/archive" : "/teachers");
+
+      if (!data.success) {
+        throw new Error(data.message || "O'qituvchilarni yuklashda xatolik");
       }
 
-      return [
-        {
-          id: Date.now(),
-          avatar: "",
-          ...teacher,
-        },
-        ...current,
-      ];
-    });
-    setEditingTeacher(null);
-    setDrawerOpen(false);
+      setTeachers(data.data.map(normalizeTeacher));
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, "Server bilan bog'lanishda xatolik"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setPage(1);
+    fetchTeachers(archiveMode);
+  }, [archiveMode]);
+
+  const groupOptions = [...new Set(teachers.flatMap((teacher) => teacher.groups))].filter(Boolean);
+  const addressOptions = [...new Set(teachers.map((teacher) => teacher.address))].filter(Boolean);
+  const filteredTeachers = teachers.filter((teacher) => {
+    const search = searchValue.trim().toLowerCase();
+    const matchesSearch = !search
+      || teacher.name.toLowerCase().includes(search)
+      || teacher.phone.toLowerCase().includes(search)
+      || teacher.email.toLowerCase().includes(search);
+    const matchesGroup = !filters.group || teacher.groups.includes(filters.group);
+    const matchesAddress = !filters.address || teacher.address === filters.address;
+
+    return matchesSearch && matchesGroup && matchesAddress;
+  });
+  const totalPages = Math.max(1, Math.ceil(filteredTeachers.length / rowsPerPage));
+  const safePage = Math.min(page, totalPages);
+  const visibleTeachers = filteredTeachers.slice((safePage - 1) * rowsPerPage, safePage * rowsPerPage);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchValue, filters.group, filters.address]);
+
+  const handleSave = async (teacher) => {
+    try {
+      setSaveError("");
+      const formData = new FormData();
+
+      formData.append("full_name", teacher.name);
+      formData.append("email", teacher.email);
+      formData.append("phone", teacher.phone);
+      formData.append("address", teacher.address);
+
+      if (teacher.password) {
+        formData.append("password", teacher.password);
+      } else if (!teacher.id) {
+        formData.append("password", "Benazir99!");
+      }
+
+      if (teacher.photo) {
+        formData.append("photo", teacher.photo);
+      }
+
+      teacher.groupIds.forEach((groupId) => {
+        formData.append("groups", String(groupId));
+      });
+
+      const { data } = teacher.id
+        ? await api.patch(`/teachers/${teacher.id}`, formData)
+        : await api.post("/teachers", formData);
+
+      if (!data.success) {
+        throw new Error(data.message || "O'qituvchi saqlashda xatolik");
+      }
+
+      setEditingTeacher(null);
+      setDrawerOpen(false);
+      await fetchTeachers(archiveMode);
+    } catch (error) {
+      setSaveError(getApiErrorMessage(error, "O'qituvchi saqlashda xatolik"));
+    }
   };
 
   const openCreateDrawer = () => {
@@ -82,9 +154,20 @@ export default function Teachers() {
     setDrawerOpen(true);
   };
 
-  const handleDelete = () => {
-    setTeachers((current) => current.filter((teacher) => teacher.id !== deletingTeacher.id));
-    setDeletingTeacher(null);
+  const handleDelete = async () => {
+    try {
+      setSaveError("");
+      const { data } = await api.delete(`/teachers/${deletingTeacher.id}`);
+
+      if (!data.success) {
+        throw new Error(data.message || "O'qituvchi o'chirishda xatolik");
+      }
+
+      setDeletingTeacher(null);
+      await fetchTeachers(archiveMode);
+    } catch (error) {
+      setSaveError(getApiErrorMessage(error, "O'qituvchi o'chirishda xatolik"));
+    }
   };
 
   return (
@@ -129,16 +212,34 @@ export default function Teachers() {
           }}
         >
           <Box sx={{ display: "flex", gap: 1.2 }}>
-            <Button startIcon={<FiFilter />} variant="outlined" sx={toolbarButtonStyles}>
+            <Button
+              startIcon={<FiFilter />}
+              variant="outlined"
+              onClick={() => setFilterOpen((value) => !value)}
+              sx={{
+                ...toolbarButtonStyles,
+                ...(filterOpen ? activeToolbarButtonStyles : {}),
+              }}
+            >
               Filters
             </Button>
-            <Button startIcon={<FiArchive />} variant="outlined" sx={toolbarButtonStyles}>
-              Arxiv
+            <Button
+              startIcon={<FiArchive />}
+              variant="outlined"
+              onClick={() => setArchiveMode((value) => !value)}
+              sx={{
+                ...toolbarButtonStyles,
+                ...(archiveMode ? activeToolbarButtonStyles : {}),
+              }}
+            >
+              {archiveMode ? "Faollar" : "Arxiv"}
             </Button>
           </Box>
 
           <TextField
             placeholder="Search"
+            value={searchValue}
+            onChange={(event) => setSearchValue(event.target.value)}
             sx={searchStyles}
             InputProps={{
               startAdornment: (
@@ -149,6 +250,71 @@ export default function Teachers() {
             }}
           />
         </Box>
+
+        <Collapse in={filterOpen}>
+          <Box
+            sx={{
+              px: 2.5,
+              py: 2,
+              borderBottom: "1px solid #edf0f4",
+              display: "grid",
+              gridTemplateColumns: "220px 220px auto",
+              gap: 1.5,
+              alignItems: "center",
+              bgcolor: "#fbfcfe",
+              "@media (max-width: 900px)": {
+                gridTemplateColumns: "1fr",
+              },
+            }}
+          >
+            <TextField
+              select
+              label="Guruh"
+              size="small"
+              value={filters.group}
+              onChange={(event) => setFilters((current) => ({ ...current, group: event.target.value }))}
+              sx={filterFieldStyles}
+            >
+              <MenuItem value="">Hammasi</MenuItem>
+              {groupOptions.map((group) => (
+                <MenuItem key={group} value={group}>{group}</MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select
+              label="Manzil"
+              size="small"
+              value={filters.address}
+              onChange={(event) => setFilters((current) => ({ ...current, address: event.target.value }))}
+              sx={filterFieldStyles}
+            >
+              <MenuItem value="">Hammasi</MenuItem>
+              {addressOptions.map((address) => (
+                <MenuItem key={address} value={address}>{address}</MenuItem>
+              ))}
+            </TextField>
+
+            <Button
+              onClick={() => {
+                setFilters({ group: "", address: "" });
+                setSearchValue("");
+              }}
+              sx={{
+                justifySelf: "start",
+                height: 40,
+                px: 2,
+                borderRadius: "8px",
+                color: purple,
+                fontWeight: 700,
+                textTransform: "none",
+                "&:hover": { bgcolor: "#f2edff" },
+              }}
+            >
+              Tozalash
+            </Button>
+          </Box>
+        </Collapse>
 
         <Table sx={{ minWidth: 1120 }}>
           <TableHead>
@@ -170,26 +336,39 @@ export default function Teachers() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {teachers.map((teacher) => (
+            {visibleTeachers.map((teacher) => (
               <TableRow key={teacher.id} sx={{ height: 76 }}>
                 <TableCell padding="checkbox" sx={bodyCellStyles}>
                   <Checkbox size="small" />
                 </TableCell>
                 <TableCell sx={bodyCellStyles}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.4 }}>
-                    <Box
-                      component="img"
-                      src={teacher.avatar}
-                      alt={teacher.name}
-                      sx={{
-                        width: 38,
-                        height: 38,
-                        borderRadius: "8px",
-                        objectFit: "cover",
-                        bgcolor: "#f4f5f7",
-                      }}
-                    />
-                    <Typography sx={{ fontSize: 17, fontWeight: 700, color: "#20232a" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.4,
+                      cursor: "pointer",
+                      "&:hover .teacher-name": { color: purple },
+                    }}
+                    onClick={() => navigate(`/teachers/${teacher.id}`)}
+                  >
+                    {teacher.avatar ? (
+                      <Box
+                        component="img"
+                        src={teacher.avatar}
+                        alt={teacher.name}
+                        sx={{
+                          width: 38,
+                          height: 38,
+                          borderRadius: "8px",
+                          objectFit: "cover",
+                          bgcolor: "#f4f5f7",
+                        }}
+                      />
+                    ) : (
+                      <Box sx={avatarFallbackStyles}>{teacher.name.charAt(0).toUpperCase()}</Box>
+                    )}
+                    <Typography className="teacher-name" sx={{ fontSize: 17, fontWeight: 700, color: "#20232a" }}>
                       {teacher.name}
                     </Typography>
                   </Box>
@@ -207,7 +386,11 @@ export default function Teachers() {
                 <TableCell sx={bodyCellStyles}>{teacher.createdAt}</TableCell>
                 <TableCell align="right" sx={bodyCellStyles}>
                   <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.2 }}>
-                    <IconButton aria-label="view" onClick={() => setViewingTeacher(teacher)} sx={actionButtonStyles}>
+                    <IconButton
+                      aria-label="view"
+                      onClick={() => navigate(`/teachers/${teacher.id}`)}
+                      sx={actionButtonStyles}
+                    >
                       <FiEye size={19} />
                     </IconButton>
                     <IconButton aria-label="delete" onClick={() => setDeletingTeacher(teacher)} sx={actionButtonStyles}>
@@ -220,6 +403,27 @@ export default function Teachers() {
                 </TableCell>
               </TableRow>
             ))}
+            {!isLoading && !errorMessage && filteredTeachers.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={8} align="center" sx={{ py: 5, color: "#6b7280" }}>
+                  {archiveMode ? "Arxivdagi o'qituvchilar topilmadi" : "O'qituvchilar topilmadi"}
+                </TableCell>
+              </TableRow>
+            )}
+            {isLoading && (
+              <TableRow>
+                <TableCell colSpan={8} align="center" sx={{ py: 5, color: "#6b7280" }}>
+                  Yuklanmoqda...
+                </TableCell>
+              </TableRow>
+            )}
+            {errorMessage && (
+              <TableRow>
+                <TableCell colSpan={8} align="center" sx={{ py: 5, color: "#ef4444" }}>
+                  {errorMessage}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
 
@@ -233,31 +437,45 @@ export default function Teachers() {
             justifyContent: "space-between",
           }}
         >
-          <Button startIcon={<FiArrowLeft />} sx={paginationSideButton}>
+          <Button
+            startIcon={<FiArrowLeft />}
+            disabled={safePage === 1}
+            onClick={() => setPage((value) => Math.max(1, value - 1))}
+            sx={paginationSideButton}
+          >
             Previous
           </Button>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.1 }}>
-            {["1", "2", "3", "...", "8", "9", "10"].map((page) => (
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
               <Box
-                key={page}
+                key={pageNumber}
+                role="button"
+                tabIndex={0}
+                onClick={() => setPage(pageNumber)}
                 sx={{
-                  width: page === "1" ? 40 : 35,
+                  width: safePage === pageNumber ? 40 : 35,
                   height: 40,
                   borderRadius: "9px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  bgcolor: page === "1" ? purple : "transparent",
-                  color: page === "1" ? "#fff" : "#59606b",
+                  bgcolor: safePage === pageNumber ? purple : "transparent",
+                  color: safePage === pageNumber ? "#fff" : "#59606b",
                   fontSize: 18,
-                  fontWeight: page === "1" ? 700 : 400,
+                  fontWeight: safePage === pageNumber ? 700 : 400,
+                  cursor: "pointer",
                 }}
               >
-                {page}
+                {pageNumber}
               </Box>
             ))}
           </Box>
-          <Button endIcon={<FiArrowRight />} sx={paginationSideButton}>
+          <Button
+            endIcon={<FiArrowRight />}
+            disabled={safePage === totalPages}
+            onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+            sx={paginationSideButton}
+          >
             Next
           </Button>
         </Box>
@@ -287,8 +505,45 @@ export default function Teachers() {
         item={viewingTeacher}
         onClose={() => setViewingTeacher(null)}
       />
+
+      <Snackbar
+        open={Boolean(saveError)}
+        autoHideDuration={4000}
+        onClose={() => setSaveError("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert severity="error" variant="filled" onClose={() => setSaveError("")}>
+          {saveError}
+        </Alert>
+      </Snackbar>
     </Box>
   );
+}
+
+function normalizeTeacher(teacher) {
+  return {
+    id: teacher.id,
+    name: teacher.full_name || "",
+    avatar: teacher.photo ? `https://najot-edu.softwareengineer.uz/${teacher.photo}` : "",
+    groupIds: teacher.GroupTeacher?.map((item) => item.Group?.id).filter(Boolean) || [],
+    groups: teacher.groups?.length
+      ? teacher.groups
+      : teacher.GroupTeacher?.map((item) => item.Group?.name).filter(Boolean) || [],
+    phone: teacher.phone || "",
+    email: teacher.email || "",
+    address: teacher.address || "",
+    createdAt: formatDate(teacher.created_at),
+  };
+}
+
+function formatDate(value) {
+  if (!value) return "";
+
+  return new Intl.DateTimeFormat("uz-UZ", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(value));
 }
 
 function ConfirmDialog({ open, title, text, onClose, onConfirm }) {
@@ -335,6 +590,16 @@ const toolbarButtonStyles = {
   "&:hover": { borderColor: "#cfd6e2", bgcolor: "#fafbfc" },
 };
 
+const activeToolbarButtonStyles = {
+  borderColor: "#d8cff5",
+  bgcolor: "#f1edff",
+  color: purple,
+  "&:hover": {
+    borderColor: "#c7b8f2",
+    bgcolor: "#ebe4ff",
+  },
+};
+
 const searchStyles = {
   width: 275,
   "& .MuiOutlinedInput-root": {
@@ -343,6 +608,20 @@ const searchStyles = {
     fontSize: 18,
     "& fieldset": { borderColor: "#e2e6ed" },
     "&:hover fieldset": { borderColor: "#d5dae4" },
+    "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
+  },
+};
+
+const filterFieldStyles = {
+  "& .MuiInputLabel-root": {
+    color: "#707782",
+  },
+  "& .MuiOutlinedInput-root": {
+    height: 40,
+    borderRadius: "8px",
+    bgcolor: "#fff",
+    "& fieldset": { borderColor: "#dfe3eb" },
+    "&:hover fieldset": { borderColor: "#cfd6e2" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
 };
@@ -373,6 +652,19 @@ const groupBadgeStyles = {
   alignItems: "center",
   color: "#424854",
   fontSize: 15,
+};
+
+const avatarFallbackStyles = {
+  width: 38,
+  height: 38,
+  borderRadius: "8px",
+  bgcolor: "#f0eafb",
+  color: purple,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: 17,
+  fontWeight: 700,
 };
 
 const actionButtonStyles = {

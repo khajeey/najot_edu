@@ -5,6 +5,11 @@ import Login from "./pages/Login";
 import DashboardLayout from "./pages/DashboardLayout";
 import Teachers from "./pages/categoryPage/Teachers";
 import Groups from "./pages/categoryPage/Groups";
+import GroupDetailPage from "./pages/categoryPage/GroupDetailPage";
+import HomeworkCreatePage from "./pages/categoryPage/HomeworkCreatePage";
+import LessonAttendancePage from "./pages/categoryPage/LessonAttendancePage";
+import TeacherDetailPage from "./pages/categoryPage/TeacherDetailPage";
+import StudentDetailPage from "./pages/categoryPage/StudentDetailPage";
 import Students from "./pages/categoryPage/Students";
 import Gifts from "./pages/categoryPage/Gifts";
 import Courses from "./pages/categoryPage/Courses";
@@ -36,8 +41,28 @@ export const router = createBrowserRouter([
         element: createElement(Groups),
       },
       {
+        path: "/groups/:groupId",
+        element: createElement(GroupDetailPage),
+      },
+      {
+        path: "/groups/:groupId/homework/yangi",
+        element: createElement(HomeworkCreatePage),
+      },
+      {
+        path: "/groups/:groupId/lesson/:lessonDate",
+        element: createElement(LessonAttendancePage),
+      },
+      {
+        path: "/teachers/:teacherId",
+        element: createElement(TeacherDetailPage),
+      },
+      {
         path: "/students",
         element: createElement(Students),
+      },
+      {
+        path: "/students/:studentId",
+        element: createElement(StudentDetailPage),
       },
       {
         path: "/gifts",
