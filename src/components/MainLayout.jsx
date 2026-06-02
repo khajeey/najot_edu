@@ -19,6 +19,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiHome,
+  FiLogOut,
   FiPlus,
   FiRefreshCw,
   FiSearch,
@@ -286,6 +287,12 @@ function Topbar() {
   const theme = useTheme();
   const { mode, toggleColorMode } = useColorMode();
   const isDark = theme.palette.mode === "dark";
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    navigate("/login", { replace: true });
+  };
 
   return (
     <Box
@@ -375,6 +382,11 @@ function Topbar() {
         <IconButton sx={surfaceIconButton}>
           <FiBell size={22} />
         </IconButton>
+        <Tooltip title="Chiqish">
+          <IconButton onClick={handleLogout} sx={surfaceIconButton} aria-label="logout">
+            <FiLogOut size={20} />
+          </IconButton>
+        </Tooltip>
         <IconButton
           aria-label="toggle theme"
           onClick={toggleColorMode}

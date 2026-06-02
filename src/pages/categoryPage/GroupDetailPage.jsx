@@ -36,6 +36,7 @@ export default function GroupDetailPage() {
   const location = useLocation();
   const [group, setGroup] = useState(null);
   const [schedules, setSchedules] = useState([]);
+  const [averageAge, setAverageAge] = useState(null);
   const [activeTab, setActiveTab] = useState(location.state?.tab ?? 0);
   const [monthIndex, setMonthIndex] = useState(0);
   const [showAllDays, setShowAllDays] = useState(false);
@@ -49,9 +50,10 @@ export default function GroupDetailPage() {
       setErrorMessage("");
 
       try {
-        const [groupsRes, schedulesRes] = await Promise.all([
+        const [groupsRes, schedulesRes, studentsRes] = await Promise.all([
           api.get("/groups/all"),
           api.get(`/groups/${groupId}/schedules`),
+          api.get("/students").catch(() => ({ data: { success: false, data: [] } })),
         ]);
 
         if (!groupsRes.data.success) {
@@ -64,6 +66,9 @@ export default function GroupDetailPage() {
         }
 
         setGroup({ ...normalizeGroup(rawGroup), _raw: rawGroup });
+        setAverageAge(
+          computeAverageAgeForGroup(studentsRes?.data?.success ? studentsRes.data.data || [] : [], Number(groupId))
+        );
 
         const schedulePayload = schedulesRes.data?.success
           ? schedulesRes.data.data ?? []
@@ -118,7 +123,13 @@ export default function GroupDetailPage() {
 
   const parameters = [
     { label: "Kurs", value: group?.course || "—" },
-    { label: "O'rta yosh", value: raw?.average_age ?? raw?.avg_age ?? "—" },
+    {
+      label: "O'rta yosh",
+      value:
+        raw?.average_age
+        ?? raw?.avg_age
+        ?? (averageAge != null ? `${averageAge}` : "—"),
+    },
     { label: "O'quvchilar sig'imi", value: raw?.max_student ?? group?.raw?.max_student ?? "—" },
     { label: "Mavjud o'quvchilar", value: group?.students ?? "—" },
     {
@@ -338,6 +349,36 @@ export default function GroupDetailPage() {
       ) : null}
     </Box>
   );
+}
+
+function computeAverageAgeForGroup(students, groupId) {
+  const list = Array.isArray(students) ? students : [];
+  const now = new Date();
+
+  const ages = list
+    .filter((student) => {
+      const groups = student.groups || student.GroupStudent || [];
+      if (!Array.isArray(groups)) return false;
+      return groups.some((g) => Number(g?.id) === Number(groupId));
+    })
+    .map((student) => student.birth_date)
+    .filter(Boolean)
+    .map((birth) => {
+      const date = new Date(birth);
+      if (Number.isNaN(date.getTime())) return null;
+      let age = now.getFullYear() - date.getFullYear();
+      const m = now.getMonth() - date.getMonth();
+      if (m < 0 || (m === 0 && now.getDate() < date.getDate())) {
+        age -= 1;
+      }
+      return age;
+    })
+    .filter((age) => typeof age === "number" && age > 0 && age < 120);
+
+  if (!ages.length) return null;
+
+  const avg = ages.reduce((sum, age) => sum + age, 0) / ages.length;
+  return Math.round(avg);
 }
 
 function InfoPanel({ title, children }) {
