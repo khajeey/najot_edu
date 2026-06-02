@@ -14,7 +14,7 @@ import { FaLayerGroup } from "react-icons/fa";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import { purple } from "./constants";
 
-const API_BASE = "https://najot-edu.softwareengineer.uz";
+import { getProfilePhotoUrl } from "../../utils/photos";
 
 export default function StudentDetailPage() {
   const { studentId } = useParams();
@@ -164,7 +164,7 @@ function normalizeStudentDetail(student) {
   return {
     id: student.id,
     name: student.full_name || student.name || "",
-    avatar: student.photo ? `${API_BASE}/${student.photo}` : "",
+    avatar: getProfilePhotoUrl(student.photo),
     phone: student.phone || "—",
     email: student.email || "—",
     address: student.address || "—",

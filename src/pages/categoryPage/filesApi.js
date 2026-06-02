@@ -1,13 +1,5 @@
 import { api } from "../../api/axiosClient";
-
-const API_BASE = "https://najot-edu.softwareengineer.uz";
-
-function resolveUrl(path) {
-  if (!path) return "";
-  if (String(path).startsWith("http")) return path;
-  const normalized = String(path).startsWith("/") ? path : `/${path}`;
-  return `${API_BASE}${normalized}`;
-}
+import { getVideoMediaUrl, isVideoMedia, resolveMediaUrl } from "./mediaUrls";
 
 export function getFilePlayUrl(file) {
   if (!file) return "";
@@ -16,7 +8,10 @@ export function getFilePlayUrl(file) {
 
   for (const candidate of candidates) {
     if (candidate) {
-      return resolveUrl(candidate);
+      if (isVideoMedia({ path: candidate })) {
+        return getVideoMediaUrl(candidate);
+      }
+      return resolveMediaUrl(candidate);
     }
   }
 

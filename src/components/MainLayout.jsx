@@ -4,8 +4,10 @@ import {
   Button,
   IconButton,
   InputBase,
+  Menu,
   MenuItem,
   Paper,
+  Popover,
   Select,
   Tooltip,
   Typography,
@@ -21,7 +23,6 @@ import {
   FiHome,
   FiLogOut,
   FiPlus,
-  FiRefreshCw,
   FiSearch,
 } from "react-icons/fi";
 import {
@@ -36,6 +37,7 @@ import {
 import brandLogo from "../assets/educoin.png";
 import { useColorMode } from "../theme/AppThemeProvider";
 import Settings from "./Settings";
+import SubscriptionCard from "./SubscriptionCard";
 
 const purple = "#7456d8";
 
@@ -46,6 +48,12 @@ const menuItems = [
   { label: "Talabalar", path: "/students", icon: FaUserGraduate },
   { label: "Sovg'alar", path: "/gifts", icon: FaGift },
   { label: "Boshqarish", path: "/dashboard/boshqarish", icon: FaCog, arrow: true, settings: true },
+];
+
+const addMenuItems = [
+  { label: "O'qituvchi qo'shish", path: "/teachers", icon: FaUserTie },
+  { label: "Guruh qo'shish", path: "/groups", icon: FaLayerGroup },
+  { label: "Talaba qo'shish", path: "/students", icon: FaUserGraduate },
 ];
 
 export default function MainLayout() {
@@ -233,52 +241,7 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
 
       <Box sx={{ flex: 1 }} />
 
-      {!collapsed && (
-        <Box
-          sx={{
-            mx: 1.25,
-            mb: 1.6,
-            px: 2,
-            py: 2,
-            borderRadius: "14px",
-            border: "1px solid",
-            borderColor: isDark ? "#4a2f2f" : "#ffcfcf",
-            bgcolor: isDark ? "#2a1f1f" : "#fff0f0",
-            display: "grid",
-            gridTemplateColumns: "36px 1fr",
-            columnGap: 1.6,
-            rowGap: 1.4,
-            alignItems: "center",
-          }}
-        >
-          <Box sx={{ gridRow: "1 / span 2", color: "text.primary", display: "flex", justifyContent: "center" }}>
-            <FiBell size={34} fill="#ffd047" strokeWidth={2.2} />
-          </Box>
-          <Box>
-            <Typography sx={{ fontSize: 18, fontWeight: 700, lineHeight: 1.1 }}>Obuna</Typography>
-            <Typography sx={{ mt: 0.6, color: "#ff4141", fontSize: 15 }}>
-              Obunangiz tugagan
-            </Typography>
-          </Box>
-          <Button
-            fullWidth
-            startIcon={<FiRefreshCw />}
-            sx={{
-              gridColumn: "1 / -1",
-              height: 45,
-              borderRadius: "10px",
-              bgcolor: "#ec482d",
-              color: "#fff",
-              fontSize: 17,
-              fontWeight: 700,
-              textTransform: "none",
-              "&:hover": { bgcolor: "#db3e25" },
-            }}
-          >
-            Obunani yangilash
-          </Button>
-        </Box>
-      )}
+      <SubscriptionCard collapsed={collapsed} />
     </Paper>
   );
 }
@@ -289,9 +252,25 @@ function Topbar() {
   const isDark = theme.palette.mode === "dark";
   const navigate = useNavigate();
 
+  const [calendarAnchor, setCalendarAnchor] = useState(null);
+  const [addAnchor, setAddAnchor] = useState(null);
+
+  const today = new Date();
+  const todayLabel = new Intl.DateTimeFormat("uz-UZ", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(today);
+
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     navigate("/login", { replace: true });
+  };
+
+  const handleQuickAdd = (path) => {
+    setAddAnchor(null);
+    navigate(path, { state: { openCreate: true } });
   };
 
   return (
@@ -306,33 +285,83 @@ function Topbar() {
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.4, minWidth: 0 }}>
-        <IconButton aria-label="calendar" sx={surfaceIconButton}>
-          <FiCalendar size={22} />
-        </IconButton>
+        <Tooltip title="Bugungi sana">
+          <IconButton
+            aria-label="calendar"
+            onClick={(event) => setCalendarAnchor(event.currentTarget)}
+            sx={surfaceIconButton}
+          >
+            <FiCalendar size={22} />
+          </IconButton>
+        </Tooltip>
+
+        <Popover
+          open={Boolean(calendarAnchor)}
+          anchorEl={calendarAnchor}
+          onClose={() => setCalendarAnchor(null)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          transformOrigin={{ vertical: "top", horizontal: "left" }}
+          slotProps={{
+            paper: {
+              sx: { mt: 1, borderRadius: "12px", p: 2, minWidth: 260 },
+            },
+          }}
+        >
+          <Typography sx={{ fontSize: 13, color: "text.secondary", mb: 0.5 }}>
+            Bugun
+          </Typography>
+          <Typography sx={{ fontSize: 16, fontWeight: 700, color: "text.primary" }}>
+            {todayLabel}
+          </Typography>
+        </Popover>
 
         <Button
-          startIcon={<FiPlus size={22} />}
-          endIcon={<FiChevronDown size={20} />}
+          startIcon={<FiPlus size={20} />}
+          endIcon={<FiChevronDown size={18} />}
+          onClick={(event) => setAddAnchor(event.currentTarget)}
           sx={{
-            height: 48,
-            px: 2.25,
+            height: 44,
+            px: 2,
             borderRadius: "11px",
             bgcolor: purple,
             color: "#fff",
             fontSize: 14,
             fontWeight: 600,
             textTransform: "none",
-            minWidth: 150,
+            minWidth: 140,
             "&:hover": { bgcolor: "#684bcf" },
           }}
         >
           Qo'shish
         </Button>
 
+        <Menu
+          anchorEl={addAnchor}
+          open={Boolean(addAnchor)}
+          onClose={() => setAddAnchor(null)}
+          slotProps={{
+            paper: { sx: { mt: 1, borderRadius: "12px", minWidth: 220 } },
+          }}
+        >
+          {addMenuItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <MenuItem
+                key={item.path}
+                onClick={() => handleQuickAdd(item.path)}
+                sx={{ gap: 1.5, py: 1.2, fontSize: 14, fontWeight: 600 }}
+              >
+                <Icon size={18} color={purple} />
+                {item.label}
+              </MenuItem>
+            );
+          })}
+        </Menu>
+
         <Paper
           elevation={0}
           sx={{
-            height: 48,
+            height: 44,
             width: { xs: 190, lg: 250 },
             ml: 0.1,
             px: 1.7,
@@ -345,13 +374,13 @@ function Topbar() {
             gap: 1.2,
           }}
         >
-          <FiSearch size={21} color="#9a9da4" />
+          <FiSearch size={20} color="#9a9da4" />
           <InputBase
             placeholder="Qidirish..."
             sx={{
               flex: 1,
               minWidth: 0,
-              fontSize: 16,
+              fontSize: 14,
               color: "text.primary",
               "& input::placeholder": { color: "text.secondary", opacity: 1 },
             }}
@@ -365,26 +394,26 @@ function Topbar() {
           size="small"
           IconComponent={FiChevronDown}
           sx={{
-            width: 190,
-            height: 47,
+            width: 160,
+            height: 44,
             bgcolor: "background.paper",
             borderRadius: "11px",
             fontSize: 14,
             color: "text.primary",
             "& fieldset": { borderColor: "divider" },
             "& .MuiSelect-select": { display: "flex", alignItems: "center", py: 0, pl: 2 },
-            "& .MuiSelect-icon": { right: 14, color: "text.secondary", fontSize: 22 },
+            "& .MuiSelect-icon": { right: 14, color: "text.secondary", fontSize: 20 },
           }}
         >
           <MenuItem value="uz">O'zbekcha</MenuItem>
         </Select>
 
         <IconButton sx={surfaceIconButton}>
-          <FiBell size={22} />
+          <FiBell size={20} />
         </IconButton>
         <Tooltip title="Chiqish">
           <IconButton onClick={handleLogout} sx={surfaceIconButton} aria-label="logout">
-            <FiLogOut size={20} />
+            <FiLogOut size={18} />
           </IconButton>
         </Tooltip>
         <IconButton
@@ -399,10 +428,10 @@ function Topbar() {
             },
           }}
         >
-          {isDark ? <FaSun size={21} /> : <FaMoon size={21} />}
+          {isDark ? <FaSun size={20} /> : <FaMoon size={20} />}
         </IconButton>
         <Tooltip title="NajotEdu">
-          <Box component="img" src={brandLogo} alt="NajotEdu" sx={{ width: 43, height: 43, objectFit: "contain" }} />
+          <Box component="img" src={brandLogo} alt="NajotEdu" sx={{ width: 40, height: 40, objectFit: "contain" }} />
         </Tooltip>
       </Box>
     </Box>
@@ -410,8 +439,8 @@ function Topbar() {
 }
 
 const surfaceIconButton = {
-  width: 48,
-  height: 48,
+  width: 44,
+  height: 44,
   bgcolor: "background.paper",
   borderRadius: "11px",
   color: "text.primary",

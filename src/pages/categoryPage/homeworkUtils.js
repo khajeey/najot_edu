@@ -47,6 +47,8 @@ export function normalizeHomeworkLesson(item) {
 
   return {
     id: item.id,
+    lessonId: item.id,
+    homeworkId: latestHomework?.id ?? null,
     topic: item.topic || "—",
     studentsCount: item.existStudentsIngroup ?? 0,
     pending: item.homeworkPending ?? 0,

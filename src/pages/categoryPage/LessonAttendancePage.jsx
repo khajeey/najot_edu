@@ -32,7 +32,7 @@ import {
   saveAllAttendance,
   saveLesson,
 } from "./lessonApi";
-import { parseSchedulesResponse } from "./scheduleUtils";
+import { buildFullSchedules } from "./scheduleUtils";
 import GroupScheduleCalendar from "./GroupScheduleCalendar";
 import TopicComboField from "./TopicComboField";
 
@@ -90,8 +90,20 @@ export default function LessonAttendancePage() {
             ? schedulesRes.data
             : schedulesRes.data?.data ?? [];
 
-        const parsedSchedules = parseSchedulesResponse(schedulePayload, rawGroup.start_date);
-        setSchedules(parsedSchedules);
+        const courseObj = rawGroup.course;
+        const durationMonths =
+          (typeof courseObj === "object" && courseObj?.duration_month)
+          || rawGroup.duration_month
+          || 1;
+
+        setSchedules(
+          buildFullSchedules({
+            apiSchedules: schedulePayload,
+            startDate: rawGroup.start_date,
+            durationMonths,
+            weekDays: rawGroup.week_day || rawGroup.days,
+          })
+        );
 
         const monthWithDate = parsedSchedules.findIndex((month) =>
           month.days.some((day) => day.dateKey === lessonDate)

@@ -34,7 +34,8 @@ import {
   FiSearch,
   FiTrash2,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getProfilePhotoUrl } from "../../utils/photos";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import StudentDrawer from "./StudentDrawer";
 import { purple } from "./constants";
@@ -44,6 +45,7 @@ const rowsPerPage = 5;
 
 export default function Students() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [deletingStudent, setDeletingStudent] = useState(null);
@@ -85,6 +87,14 @@ export default function Students() {
   useEffect(() => {
     setPage(1);
   }, [searchValue, filters.group, filters.address]);
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      setEditingStudent(null);
+      setDrawerOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.state?.openCreate, navigate]);
 
   const groupOptions = [...new Set(students.flatMap((student) => student.groups))].filter(Boolean);
   const addressOptions = [...new Set(students.map((student) => student.address))].filter(Boolean);
@@ -312,7 +322,7 @@ function normalizeStudent(student) {
   return {
     id: student.id,
     name: student.full_name || "",
-    avatar: student.photo ? `https://najot-edu.softwareengineer.uz/${student.photo}` : "",
+    avatar: getProfilePhotoUrl(student.photo),
     groupIds: groups.map((group) => group.id).filter(Boolean),
     groups: groups.map((group) => group.name).filter(Boolean),
     phone: student.phone || "",

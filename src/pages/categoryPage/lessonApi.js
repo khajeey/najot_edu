@@ -84,16 +84,25 @@ export async function saveAllAttendance(groupId, students) {
 }
 
 export async function fetchGroupAttendance(groupId) {
-  try {
-    const { data } = await api.get("/attendance", {
-      params: { group_id: groupId },
-    });
+  const endpoints = [
+    () => api.get("/attendance/all", { params: { group_id: groupId } }),
+    () => api.get("/attendance/all"),
+    () => api.get("/attendance", { params: { group_id: groupId } }),
+  ];
 
-    if (data.success) {
-      return data.data || [];
+  for (const request of endpoints) {
+    try {
+      const { data } = await request();
+      if (data?.success && Array.isArray(data.data)) {
+        const list = data.data;
+        const filtered = list.filter(
+          (item) => Number(item.group_id ?? item.groupId) === Number(groupId)
+        );
+        return filtered.length ? filtered : list;
+      }
+    } catch {
+      // try next
     }
-  } catch {
-    // attendance list optional
   }
 
   return [];

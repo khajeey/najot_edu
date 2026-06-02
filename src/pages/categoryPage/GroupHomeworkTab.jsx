@@ -135,7 +135,21 @@ export default function GroupHomeworkTab({ groupId, groupName }) {
             </TableHead>
             <TableBody>
               {lessons.map((lesson, index) => (
-                <TableRow key={lesson.id} sx={{ height: 58 }}>
+                <TableRow
+                  key={lesson.id}
+                  sx={{
+                    height: 58,
+                    cursor: lesson.homeworkId ? "pointer" : "default",
+                    "&:hover": lesson.homeworkId ? { bgcolor: "action.hover" } : undefined,
+                  }}
+                  onClick={() => {
+                    if (lesson.homeworkId) {
+                      navigate(`/groups/${groupId}/homework/${lesson.homeworkId}/check`, {
+                        state: { groupName },
+                      });
+                    }
+                  }}
+                >
                   <TableCell sx={bodyCellStyles}>{index + 1}</TableCell>
                   <TableCell sx={{ ...bodyCellStyles, fontWeight: 700, color: "#111827" }}>{lesson.topic}</TableCell>
                   <TableCell align="center" sx={bodyCellStyles}>
@@ -151,7 +165,17 @@ export default function GroupHomeworkTab({ groupId, groupName }) {
                   <TableCell sx={bodyCellStyles}>{formatHomeworkDateTime(lesson.endsAt)}</TableCell>
                   <TableCell sx={bodyCellStyles}>{formatHomeworkDate(lesson.lessonDate)}</TableCell>
                   <TableCell align="right" sx={bodyCellStyles}>
-                    <IconButton sx={{ color: "#a0a4ab" }}>
+                    <IconButton
+                      sx={{ color: "#a0a4ab" }}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (lesson.homeworkId) {
+                          navigate(`/groups/${groupId}/homework/${lesson.homeworkId}/check`, {
+                            state: { groupName },
+                          });
+                        }
+                      }}
+                    >
                       <FiMoreVertical size={20} />
                     </IconButton>
                   </TableCell>

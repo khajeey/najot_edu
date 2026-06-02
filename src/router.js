@@ -7,6 +7,8 @@ import Teachers from "./pages/categoryPage/Teachers";
 import Groups from "./pages/categoryPage/Groups";
 import GroupDetailPage from "./pages/categoryPage/GroupDetailPage";
 import HomeworkCreatePage from "./pages/categoryPage/HomeworkCreatePage";
+import HomeworkCheckPage from "./pages/categoryPage/HomeworkCheckPage";
+import HomeworkAnswerCheckPage from "./pages/categoryPage/HomeworkAnswerCheckPage";
 import LessonAttendancePage from "./pages/categoryPage/LessonAttendancePage";
 import TeacherDetailPage from "./pages/categoryPage/TeacherDetailPage";
 import StudentDetailPage from "./pages/categoryPage/StudentDetailPage";
@@ -47,6 +49,14 @@ export const router = createBrowserRouter([
       {
         path: "/groups/:groupId/homework/yangi",
         element: createElement(HomeworkCreatePage),
+      },
+      {
+        path: "/groups/:groupId/homework/:homeworkId/check",
+        element: createElement(HomeworkCheckPage),
+      },
+      {
+        path: "/groups/:groupId/homework/:homeworkId/answers/:answerId",
+        element: createElement(HomeworkAnswerCheckPage),
       },
       {
         path: "/groups/:groupId/lesson/:lessonDate",

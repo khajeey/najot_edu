@@ -22,9 +22,9 @@ import {
   normalizeGroup,
 } from "./groupUtils";
 import {
+  buildFullSchedules,
   formatDateRange,
   formatTimeRange,
-  parseSchedulesResponse,
   pickDefaultLessonDate,
 } from "./scheduleUtils";
 
@@ -40,6 +40,7 @@ export default function GroupDetailPage() {
   const [activeTab, setActiveTab] = useState(location.state?.tab ?? 0);
   const [monthIndex, setMonthIndex] = useState(0);
   const [showAllDays, setShowAllDays] = useState(false);
+  const [showAllMonths, setShowAllMonths] = useState(false);
   const [showAllRows, setShowAllRows] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -65,7 +66,8 @@ export default function GroupDetailPage() {
           throw new Error("Guruh topilmadi");
         }
 
-        setGroup({ ...normalizeGroup(rawGroup), _raw: rawGroup });
+        const normalized = normalizeGroup(rawGroup);
+        setGroup({ ...normalized, _raw: rawGroup });
         setAverageAge(
           computeAverageAgeForGroup(studentsRes?.data?.success ? studentsRes.data.data || [] : [], Number(groupId))
         );
@@ -75,7 +77,21 @@ export default function GroupDetailPage() {
           : Array.isArray(schedulesRes.data)
             ? schedulesRes.data
             : schedulesRes.data?.data ?? [];
-        setSchedules(parseSchedulesResponse(schedulePayload, rawGroup.start_date));
+        const courseObj = rawGroup.course;
+        const durationMonths =
+          (typeof courseObj === "object" && courseObj?.duration_month)
+          || rawGroup.duration_month
+          || normalized.durationMonths
+          || 1;
+
+        setSchedules(
+          buildFullSchedules({
+            apiSchedules: schedulePayload,
+            startDate: rawGroup.start_date,
+            durationMonths,
+            weekDays: rawGroup.week_day || rawGroup.days,
+          })
+        );
         setMonthIndex(0);
       } catch (error) {
         setErrorMessage(getApiErrorMessage(error, "Guruh ma'lumotlarini yuklashda xatolik"));
@@ -340,6 +356,8 @@ export default function GroupDetailPage() {
               onMonthIndexChange={setMonthIndex}
               showAllDays={showAllDays}
               onShowAllDaysChange={setShowAllDays}
+              showAllMonths={showAllMonths}
+              onShowAllMonthsChange={setShowAllMonths}
               onDayClick={openLessonPage}
             />
           </Paper>

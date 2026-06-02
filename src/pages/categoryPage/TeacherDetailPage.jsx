@@ -14,7 +14,7 @@ import { FaLayerGroup, FaUserGraduate, FaUserTie } from "react-icons/fa";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import { purple } from "./constants";
 
-const API_BASE = "https://najot-edu.softwareengineer.uz";
+import { getProfilePhotoUrl } from "../../utils/photos";
 
 export default function TeacherDetailPage() {
   const { teacherId } = useParams();
@@ -175,7 +175,7 @@ function normalizeTeacherDetail(teacher) {
   return {
     id: teacher.id,
     name: teacher.full_name || teacher.name || "",
-    avatar: teacher.photo ? `${API_BASE}/${teacher.photo}` : "",
+    avatar: getProfilePhotoUrl(teacher.photo),
     phone: teacher.phone || "—",
     email: teacher.email || "—",
     address: teacher.address || "—",

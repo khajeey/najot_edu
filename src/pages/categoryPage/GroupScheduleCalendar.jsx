@@ -5,19 +5,126 @@ import { purple } from "./constants";
 const DEFAULT_VISIBLE = 12;
 const green = "#20b486";
 
+function DayCell({ lesson, isSelected, onDayClick }) {
+  const isPast = lesson.isPast && !isSelected;
+
+  return (
+    <Box
+      role={onDayClick ? "button" : undefined}
+      tabIndex={onDayClick ? 0 : undefined}
+      onClick={() => onDayClick?.(lesson.dateKey)}
+      sx={{
+        width: 54,
+        minHeight: 72,
+        borderRadius: "8px",
+        border: isSelected
+          ? `1px solid ${green}`
+          : isPast
+            ? "1px solid"
+            : "1px solid #d8dbe2",
+        borderColor: isSelected ? green : isPast ? "divider" : "#d8dbe2",
+        bgcolor: isSelected ? green : isPast ? "action.hover" : "background.paper",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        color: isSelected ? "#fff" : isPast ? "text.secondary" : "text.primary",
+        flexShrink: 0,
+        cursor: onDayClick ? "pointer" : "default",
+        transition: "background-color 160ms ease, color 160ms ease",
+        "&:hover": onDayClick
+          ? {
+              bgcolor: isSelected ? green : "action.selected",
+              borderColor: green,
+            }
+          : undefined,
+      }}
+    >
+      <Typography sx={{ fontSize: 12, fontWeight: 600 }}>{lesson.month}</Typography>
+      <Typography sx={{ fontSize: 20, fontWeight: 800, lineHeight: 1.1 }}>{lesson.day}</Typography>
+      {lesson.weekday && (
+        <Typography
+          sx={{
+            fontSize: 11,
+            color: isSelected ? "#e8fff5" : "text.secondary",
+            mt: 0.3,
+          }}
+        >
+          {lesson.weekday}
+        </Typography>
+      )}
+    </Box>
+  );
+}
+
+function MonthDays({ days, showAllDays, selectedDateKey, onDayClick }) {
+  const visibleDays = showAllDays ? days : days.slice(0, DEFAULT_VISIBLE);
+
+  return (
+    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.2, justifyContent: "flex-start" }}>
+      {visibleDays.map((lesson) => (
+        <DayCell
+          key={`${lesson.month}-${lesson.day}-${lesson.weekday}-${lesson.dateKey}`}
+          lesson={lesson}
+          isSelected={selectedDateKey && lesson.dateKey === selectedDateKey}
+          onDayClick={onDayClick}
+        />
+      ))}
+    </Box>
+  );
+}
+
 export default function GroupScheduleCalendar({
   schedules,
   monthIndex,
   onMonthIndexChange,
   showAllDays,
   onShowAllDaysChange,
+  showAllMonths,
+  onShowAllMonthsChange,
   selectedDateKey,
   onDayClick,
 }) {
   const currentMonth = schedules[monthIndex];
   const allDays = currentMonth?.days || [];
-  const visibleDays = showAllDays ? allDays : allDays.slice(0, DEFAULT_VISIBLE);
   const hasHiddenDays = allDays.length > DEFAULT_VISIBLE;
+
+  if (showAllMonths) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          {schedules.map((month) => (
+            <Box key={month.index}>
+              <Box sx={{ mb: 1.5 }}>
+                <Typography sx={{ fontSize: 16, fontWeight: 700, color: "text.primary" }}>
+                  {month.label}
+                </Typography>
+                {month.calendarLabel && (
+                  <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+                    {month.calendarLabel}
+                  </Typography>
+                )}
+              </Box>
+              <MonthDays
+                days={month.days || []}
+                showAllDays
+                selectedDateKey={selectedDateKey}
+                onDayClick={onDayClick}
+              />
+            </Box>
+          ))}
+        </Box>
+
+        {onShowAllMonthsChange && (
+          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2.5 }}>
+            <Button onClick={() => onShowAllMonthsChange(false)} sx={linkButtonStyles}>
+              Kamroq ko&apos;rsatish
+            </Button>
+          </Box>
+        )}
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -37,9 +144,16 @@ export default function GroupScheduleCalendar({
         >
           <FiChevronLeft />
         </IconButton>
-        <Typography sx={{ fontSize: 18, fontWeight: 700, color: "#111827", minWidth: 140 }}>
-          {currentMonth?.label || "Darslar"}
-        </Typography>
+        <Box>
+          <Typography sx={{ fontSize: 16, fontWeight: 700, color: "text.primary", minWidth: 140 }}>
+            {currentMonth?.label || "Darslar"}
+          </Typography>
+          {currentMonth?.calendarLabel && (
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+              {currentMonth.calendarLabel}
+            </Typography>
+          )}
+        </Box>
         <IconButton
           disabled={monthIndex >= schedules.length - 1}
           onClick={() => onMonthIndexChange(monthIndex + 1)}
@@ -49,75 +163,25 @@ export default function GroupScheduleCalendar({
         </IconButton>
       </Box>
 
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 1.2,
-          justifyContent: "flex-start",
-          alignItems: "flex-start",
-          width: "100%",
-        }}
-      >
-        {visibleDays.map((lesson) => {
-          const isSelected = selectedDateKey && lesson.dateKey === selectedDateKey;
-          const isPast = lesson.isPast && !isSelected;
+      <MonthDays
+        days={allDays}
+        showAllDays={showAllDays}
+        selectedDateKey={selectedDateKey}
+        onDayClick={onDayClick}
+      />
 
-          return (
-            <Box
-              key={`${lesson.month}-${lesson.day}-${lesson.weekday}`}
-              role={onDayClick ? "button" : undefined}
-              tabIndex={onDayClick ? 0 : undefined}
-              onClick={() => onDayClick?.(lesson.dateKey)}
-              sx={{
-                width: 54,
-                minHeight: 72,
-                borderRadius: "8px",
-                border: isSelected
-                  ? `1px solid ${green}`
-                  : isPast
-                    ? "1px solid #e5e7eb"
-                    : "1px solid #d8dbe2",
-                bgcolor: isSelected ? green : isPast ? "#eceef2" : "#fff",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                color: isSelected ? "#fff" : isPast ? "#9aa0a8" : "#111827",
-                flexShrink: 0,
-                cursor: onDayClick ? "pointer" : "default",
-                transition: "background-color 160ms ease, color 160ms ease",
-                "&:hover": onDayClick
-                  ? {
-                      bgcolor: isSelected ? green : "#f5fbf8",
-                      borderColor: green,
-                    }
-                  : undefined,
-              }}
-            >
-              <Typography sx={{ fontSize: 12, fontWeight: 600 }}>{lesson.month}</Typography>
-              <Typography sx={{ fontSize: 22, fontWeight: 800, lineHeight: 1.1 }}>{lesson.day}</Typography>
-              {lesson.weekday && (
-                <Typography
-                  sx={{
-                    fontSize: 11,
-                    color: isSelected ? "#e8fff5" : isPast ? "#b0b5bd" : "#6b7280",
-                    mt: 0.3,
-                  }}
-                >
-                  {lesson.weekday}
-                </Typography>
-              )}
-            </Box>
-          );
-        })}
-      </Box>
-
-      {hasHiddenDays && (
-        <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2.5 }}>
-          <Button onClick={() => onShowAllDaysChange(!showAllDays)} sx={linkButtonStyles}>
-            {showAllDays ? "Kamroq ko'rsatish" : "Barchasini ko'rish"}
-          </Button>
+      {(hasHiddenDays || schedules.length > 1) && (
+        <Box sx={{ display: "flex", justifyContent: "flex-start", gap: 2, mt: 2.5, flexWrap: "wrap" }}>
+          {hasHiddenDays && (
+            <Button onClick={() => onShowAllDaysChange(!showAllDays)} sx={linkButtonStyles}>
+              {showAllDays ? "Kamroq ko'rsatish" : "Barcha kunlarni ko'rish"}
+            </Button>
+          )}
+          {schedules.length > 1 && onShowAllMonthsChange && (
+            <Button onClick={() => onShowAllMonthsChange(true)} sx={linkButtonStyles}>
+              Barcha oylarni ko&apos;rish
+            </Button>
+          )}
         </Box>
       )}
     </Box>
@@ -127,8 +191,9 @@ export default function GroupScheduleCalendar({
 const roundIconButtonStyles = {
   width: 40,
   height: 40,
-  border: "1px solid #e5e7eb",
-  bgcolor: "#fff",
+  border: "1px solid",
+  borderColor: "divider",
+  bgcolor: "background.paper",
 };
 
 const linkButtonStyles = {
@@ -136,4 +201,5 @@ const linkButtonStyles = {
   color: purple,
   fontWeight: 700,
   px: 0,
+  fontSize: 14,
 };

@@ -34,14 +34,16 @@ import {
   FiSearch,
   FiTrash2,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import TeacherDrawer from "./TeacherDrawer";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import { purple } from "./constants";
 import { pageTitleSx, panelPaperSx } from "../../theme/surfaces";
+import { getProfilePhotoUrl } from "../../utils/photos";
 
 export default function Teachers() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState(null);
   const [deletingTeacher, setDeletingTeacher] = useState(null);
@@ -83,6 +85,14 @@ export default function Teachers() {
     setPage(1);
     fetchTeachers(archiveMode);
   }, [archiveMode]);
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      setEditingTeacher(null);
+      setDrawerOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.state?.openCreate, navigate]);
 
   const groupOptions = [...new Set(teachers.flatMap((teacher) => teacher.groups))].filter(Boolean);
   const addressOptions = [...new Set(teachers.map((teacher) => teacher.address))].filter(Boolean);
@@ -525,7 +535,7 @@ function normalizeTeacher(teacher) {
   return {
     id: teacher.id,
     name: teacher.full_name || "",
-    avatar: teacher.photo ? `https://najot-edu.softwareengineer.uz/${teacher.photo}` : "",
+    avatar: getProfilePhotoUrl(teacher.photo),
     groupIds: teacher.GroupTeacher?.map((item) => item.Group?.id).filter(Boolean) || [],
     groups: teacher.groups?.length
       ? teacher.groups

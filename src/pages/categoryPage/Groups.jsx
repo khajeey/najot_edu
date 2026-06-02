@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -31,6 +31,7 @@ import { normalizeGroup } from "./groupUtils";
 
 export default function Groups() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
   const [deletingGroup, setDeletingGroup] = useState(null);
@@ -76,6 +77,14 @@ export default function Groups() {
   useEffect(() => {
     loadData(archiveMode);
   }, [archiveMode, loadData]);
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      setEditingGroup(null);
+      setDrawerOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.state?.openCreate, navigate]);
 
   const handleSave = async (payload) => {
     try {
