@@ -60,8 +60,20 @@ export async function fetchCourses() {
   return list.map(normalizeCourse);
 }
 
+export async function fetchArchivedCourses() {
+  const { data } = await api.get("/courses/archive");
+  const list = data?.data || data || [];
+  return list.map(normalizeCourse);
+}
+
 export async function fetchRooms() {
   const list = await loadList(["/rooms", "/rooms/all"]);
+  return list.map(normalizeRoom);
+}
+
+export async function fetchArchivedRooms() {
+  const { data } = await api.get("/rooms/arxive");
+  const list = data?.data || data || [];
   return list.map(normalizeRoom);
 }
 

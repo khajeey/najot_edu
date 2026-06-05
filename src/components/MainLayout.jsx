@@ -59,6 +59,7 @@ const addMenuItems = [
 export default function MainLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const theme = useTheme();
   const [settingsOpen, setSettingsOpen] = useState(location.pathname.startsWith("/dashboard/boshqarish"));
   const showSettings = settingsOpen;
@@ -81,10 +82,20 @@ export default function MainLayout() {
       <Sidebar
         collapsed={collapsed}
         settingsOpen={showSettings}
-        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSettings={() => setSettingsOpen((prev) => !prev)}
+        onCloseSettings={() => setSettingsOpen(false)}
         onToggle={() => setCollapsed((value) => !value)}
       />
-      {showSettings && <Settings onClose={() => setSettingsOpen(false)} />}
+      {showSettings && (
+        <Settings
+          onClose={() => {
+            setSettingsOpen(false);
+            if (location.pathname.startsWith("/dashboard/boshqarish")) {
+              navigate("/dashboard");
+            }
+          }}
+        />
+      )}
 
       <Box
         component="main"
@@ -93,8 +104,24 @@ export default function MainLayout() {
           minWidth: 0,
           px: { xs: 2, lg: 3 },
           py: 2.25,
+          position: "relative",
         }}
       >
+        {showSettings && !location.pathname.startsWith("/dashboard/boshqarish") && (
+          <Box
+            onClick={() => setSettingsOpen(false)}
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              bgcolor: "rgba(0, 0, 0, 0.45)",
+              zIndex: 10,
+              cursor: "pointer",
+            }}
+          />
+        )}
         <Topbar />
         <Outlet />
       </Box>
@@ -102,7 +129,7 @@ export default function MainLayout() {
   );
 }
 
-function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
+function Sidebar({ collapsed, settingsOpen, onOpenSettings, onCloseSettings, onToggle }) {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -173,19 +200,22 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onToggle }) {
       <Box sx={{ px: 1.25, display: "flex", flexDirection: "column", gap: 0.8 }}>
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const active = item.settings
-            ? location.pathname.startsWith("/dashboard/boshqarish") || settingsOpen
-            : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+          let active = false;
+          if (item.settings) {
+            active = location.pathname.startsWith("/dashboard/boshqarish") || settingsOpen;
+          } else if (item.path === "/dashboard") {
+            active = location.pathname === "/dashboard" && !settingsOpen;
+          } else {
+            active = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+          }
 
           const handleClick = () => {
             if (item.settings) {
               onOpenSettings();
-              if (!location.pathname.startsWith("/dashboard/boshqarish")) {
-                navigate("/dashboard/boshqarish/kurslar");
-              }
               return;
             }
 
+            onCloseSettings();
             navigate(item.path);
           };
 

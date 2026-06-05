@@ -47,6 +47,7 @@ export default function HomeworkCheckPage() {
   const [counts, setCounts] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [hasSetDefaultTab, setHasSetDefaultTab] = useState(false);
 
   const statusKey = HOMEWORK_TABS[activeTab]?.key;
 
@@ -67,12 +68,25 @@ export default function HomeworkCheckPage() {
       try {
         const { counts: nextCounts } = await fetchHomeworkResultsWithCounts(groupId, homeworkId);
         setCounts(nextCounts);
+
+        if (!hasSetDefaultTab && location.state?.tab === undefined) {
+          if (nextCounts.PENDING > 0) {
+            setActiveTab(0);
+          } else if (nextCounts.REJECTED > 0) {
+            setActiveTab(1);
+          } else if (nextCounts.ACCEPTED > 0) {
+            setActiveTab(2);
+          } else if (nextCounts.NOT_DONE > 0) {
+            setActiveTab(3);
+          }
+          setHasSetDefaultTab(true);
+        }
       } catch {
         setCounts({});
       }
     };
     loadCounts();
-  }, [groupId, homeworkId]);
+  }, [groupId, homeworkId, hasSetDefaultTab, location.state?.tab]);
 
   useEffect(() => {
     const load = async () => {

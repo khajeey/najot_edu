@@ -3,7 +3,7 @@ import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { purple } from "./constants";
 import { mutedCardSx } from "../../theme/surfaces";
 
-export default function DataCard({ item, onEdit, onDelete }) {
+export default function DataCard({ item, onEdit, onDelete, isArchived }) {
   const theme = useTheme();
 
   return (
@@ -45,14 +45,34 @@ export default function DataCard({ item, onEdit, onDelete }) {
             </Typography>
           </Box>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, pt: 4.7, flexShrink: 0 }}>
-            <IconButton aria-label="delete" onClick={onDelete} sx={cardActionButton}>
-              <FiTrash2 size={22} />
-            </IconButton>
-            <IconButton aria-label="edit" onClick={onEdit} sx={cardActionButton}>
-              <FiEdit2 size={22} />
-            </IconButton>
-          </Box>
+          {isArchived ? (
+            <Box sx={{ pt: 4.7, flexShrink: 0 }}>
+              <Box
+                sx={{
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: "6px",
+                  bgcolor: theme.palette.mode === "dark" ? "#1e293b" : "#f3f4f6",
+                  color: "text.secondary",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  border: "1px solid",
+                  borderColor: "divider",
+                }}
+              >
+                Arxivlangan
+              </Box>
+            </Box>
+          ) : (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, pt: 4.7, flexShrink: 0 }}>
+              <IconButton aria-label="delete" onClick={onDelete} sx={cardActionButton}>
+                <FiTrash2 size={22} />
+              </IconButton>
+              <IconButton aria-label="edit" onClick={onEdit} sx={cardActionButton}>
+                <FiEdit2 size={22} />
+              </IconButton>
+            </Box>
+          )}
         </Box>
       </Box>
 

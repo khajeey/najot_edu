@@ -155,8 +155,22 @@ export default function GroupHomeworkTab({ groupId, groupName }) {
                   <TableCell align="center" sx={bodyCellStyles}>
                     <Typography sx={metricTextStyles}>{lesson.studentsCount}</Typography>
                   </TableCell>
-                  <TableCell align="center" sx={bodyCellStyles}>
-                    <Typography sx={metricTextStyles}>{lesson.pending}</Typography>
+                  <TableCell
+                    align="center"
+                    sx={{
+                      ...bodyCellStyles,
+                      bgcolor: lesson.pending > 0 ? "#fee2e2" : "transparent",
+                      color: lesson.pending > 0 ? "#ef4444" : "inherit",
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        ...metricTextStyles,
+                        color: lesson.pending > 0 ? "#ef4444" : "#111827",
+                      }}
+                    >
+                      {lesson.pending}
+                    </Typography>
                   </TableCell>
                   <TableCell align="center" sx={bodyCellStyles}>
                     <Typography sx={metricTextStyles}>{lesson.accepted}</Typography>

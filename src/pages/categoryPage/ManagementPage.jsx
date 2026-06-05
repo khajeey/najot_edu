@@ -28,6 +28,8 @@ import {
   deleteRoom,
   fetchCourses,
   fetchRooms,
+  fetchArchivedCourses,
+  fetchArchivedRooms,
   updateCourse,
   updateRoom,
 } from "./managementApi";
@@ -46,6 +48,7 @@ export default function ManagementPage({ title }) {
   const [editingRoom, setEditingRoom] = useState(null);
   const [deletingCourse, setDeletingCourse] = useState(null);
   const [deletingRoom, setDeletingRoom] = useState(null);
+  const [subTab, setSubTab] = useState("active");
 
   const activeTab = managementTabs.find((tab) => location.pathname === tab.path) || managementTabs[0];
   const isStaffTab = activeTab.key === "staff";
@@ -60,16 +63,28 @@ export default function ManagementPage({ title }) {
 
     try {
       if (isRoomsTab) {
-        setRooms(await fetchRooms());
+        if (subTab === "archive") {
+          setRooms(await fetchArchivedRooms());
+        } else {
+          setRooms(await fetchRooms());
+        }
       } else {
-        setCourses(await fetchCourses());
+        if (subTab === "archive") {
+          setCourses(await fetchArchivedCourses());
+        } else {
+          setCourses(await fetchCourses());
+        }
       }
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, "Ma'lumotlarni yuklashda xatolik"));
     } finally {
       setIsLoading(false);
     }
-  }, [isRoomsTab, isStaffTab]);
+  }, [isRoomsTab, isStaffTab, subTab]);
+
+  useEffect(() => {
+    setSubTab("active");
+  }, [location.pathname]);
 
   useEffect(() => {
     loadItems();
@@ -225,8 +240,44 @@ export default function ManagementPage({ title }) {
             mb: 3.8,
           }}
         >
-          <Typography sx={{ fontSize: 20, fontWeight: 700, color: "text.primary" }}>{title}</Typography>
-          {!isStaffTab && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 3.8 }}>
+            <Typography sx={{ fontSize: 20, fontWeight: 700, color: "text.primary" }}>{title}</Typography>
+            {!isStaffTab && (
+              <Box sx={{ display: "flex", bgcolor: "action.hover", borderRadius: "8px", p: 0.5 }}>
+                <Button
+                  size="small"
+                  onClick={() => setSubTab("active")}
+                  sx={{
+                    px: 2,
+                    textTransform: "none",
+                    fontWeight: 600,
+                    bgcolor: subTab === "active" ? "background.paper" : "transparent",
+                    color: subTab === "active" ? purple : "text.secondary",
+                    boxShadow: subTab === "active" ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
+                    "&:hover": { bgcolor: subTab === "active" ? "background.paper" : "action.selected" },
+                  }}
+                >
+                  Faol
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => setSubTab("archive")}
+                  sx={{
+                    px: 2,
+                    textTransform: "none",
+                    fontWeight: 600,
+                    bgcolor: subTab === "archive" ? "background.paper" : "transparent",
+                    color: subTab === "archive" ? purple : "text.secondary",
+                    boxShadow: subTab === "archive" ? "0 1px 4px rgba(0,0,0,0.06)" : "none",
+                    "&:hover": { bgcolor: subTab === "archive" ? "background.paper" : "action.selected" },
+                  }}
+                >
+                  Arxiv
+                </Button>
+              </Box>
+            )}
+          </Box>
+          {!isStaffTab && subTab === "active" && (
             <Button
               startIcon={<FiPlus size={22} />}
               onClick={openCreateDrawer}
@@ -298,6 +349,7 @@ export default function ManagementPage({ title }) {
                 <RoomCard
                   key={item.id}
                   item={item}
+                  isArchived={subTab === "archive"}
                   onEdit={() => {
                     setEditingRoom(item);
                     setDrawerOpen(true);
@@ -308,6 +360,7 @@ export default function ManagementPage({ title }) {
                 <DataCard
                   key={item.id}
                   item={item}
+                  isArchived={subTab === "archive"}
                   onEdit={() => {
                     setEditingCourse(item);
                     setDrawerOpen(true);

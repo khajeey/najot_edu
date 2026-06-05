@@ -215,8 +215,7 @@ export default function HomeworkAnswerCheckPage() {
 
       <Paper elevation={0} sx={{ ...panelPaperSx, p: 2.5 }}>
         <Alert severity="info" sx={{ mb: 2.5, fontSize: 13 }}>
-          60–100 oralig&apos;ida ball qo&apos;yilgan vazifa &quot;Qabul qilingan&quot;, 0–59 oralig&apos;ida
-          ball qo&apos;yilgan vazifa &quot;Qaytarilgan&quot; hisoblanadi.
+          60-100 oralig'ida ball qo'yilgan vazifa 'Qabul qilingan', 0-59 oralig'ida ball qo'yilgan vazifa 'Qaytarilgan' hisoblanadi.
         </Alert>
 
         <Typography sx={{ fontSize: 14, fontWeight: 700, mb: 1 }}>Ball</Typography>
@@ -270,8 +269,11 @@ export default function HomeworkAnswerCheckPage() {
           }}
         >
           <FiUploadCloud size={28} color={green} />
-          <Typography sx={{ fontSize: 13, color: "text.secondary", textAlign: "center", px: 2 }}>
-            .jpg, .png, .pdf, .mp4 formatlarida fayl yuklash mumkin
+          <Typography sx={{ fontSize: 14, fontWeight: 500, color: "text.primary", textAlign: "center", px: 2 }}>
+            Faylni yuklash uchun ushbu hudud ustiga bosing yoki faylni shu yerga olib keling
+          </Typography>
+          <Typography sx={{ fontSize: 12, color: "text.secondary", textAlign: "center", px: 2, mt: 0.5 }}>
+            .jpg, .png, .pdf, .mp4, .docs formatlaridan birida bo'lishi mumkin
           </Typography>
           <input hidden type="file" multiple />
         </Box>

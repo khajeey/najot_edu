@@ -1,4 +1,5 @@
 import { api } from "../../api/axiosClient";
+import { fetchGroupStudents } from "./lessonApi";
 
 export const HOMEWORK_RESULT_STATUS = {
   PENDING: "PENDING",
@@ -49,7 +50,7 @@ export function normalizeHomeworkResult(item) {
   }
 
   const studentId = item.student_id ?? student.id ?? item.id;
-  const homeworkAnswerId = item.homework_answer_id ?? (hasSubmission ? item.id : null);
+  const homeworkAnswerId = item.homework_answer_id ?? (hasSubmission ? item.id : null) ?? studentId;
 
   return {
     id: homeworkAnswerId ?? studentId,
@@ -68,11 +69,11 @@ export function normalizeHomeworkResult(item) {
     files: (item.files || item.File || item.attachments || [])
       .map(normalizeFile)
       .filter(Boolean),
-    canGrade: Boolean(homeworkAnswerId && status !== HOMEWORK_RESULT_STATUS.NOT_DONE),
+    canGrade: Boolean(status !== HOMEWORK_RESULT_STATUS.NOT_DONE),
   };
 }
 
-export async function fetchHomeworkResults(groupId, homeworkId, status) {
+export async function fetchHomeworkResultsRaw(groupId, homeworkId, status) {
   const params = status ? { status } : undefined;
   const { data } = await api.get(`/group/${groupId}/homework/${homeworkId}/results`, { params });
 
@@ -80,8 +81,76 @@ export async function fetchHomeworkResults(groupId, homeworkId, status) {
     throw new Error(data.message || "Natijalarni yuklashda xatolik");
   }
 
-  const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+  let list = [];
+  if (data?.data?.students && Array.isArray(data.data.students)) {
+    list = data.data.students;
+  } else if (Array.isArray(data?.data)) {
+    list = data.data;
+  } else if (Array.isArray(data)) {
+    list = data;
+  }
   return list.map(normalizeHomeworkResult);
+}
+
+export async function fetchHomeworkResults(groupId, homeworkId, status) {
+  // Fetch group students and results for PENDING, ACCEPTED, and REJECTED in parallel
+  const [groupStudents, pendingRes, acceptedRes, rejectedRes] = await Promise.all([
+    fetchGroupStudents(groupId).catch(() => []),
+    fetchHomeworkResultsRaw(groupId, homeworkId, "PENDING").catch(() => []),
+    fetchHomeworkResultsRaw(groupId, homeworkId, "ACCEPTED").catch(() => []),
+    fetchHomeworkResultsRaw(groupId, homeworkId, "REJECTED").catch(() => []),
+  ]);
+
+  const submissionsMap = new Map();
+  pendingRes.forEach((item) => {
+    if (item.studentId) submissionsMap.set(Number(item.studentId), item);
+  });
+  acceptedRes.forEach((item) => {
+    if (item.studentId) submissionsMap.set(Number(item.studentId), item);
+  });
+  rejectedRes.forEach((item) => {
+    if (item.studentId) submissionsMap.set(Number(item.studentId), item);
+  });
+
+  const allResults = groupStudents.map((student) => {
+    const submission = submissionsMap.get(Number(student.id));
+    if (submission) {
+      return {
+        ...submission,
+        studentName: student.name,
+      };
+    }
+    return {
+      id: `not_done_${student.id}`,
+      homeworkAnswerId: null,
+      studentId: student.id,
+      studentName: student.name,
+      submittedAt: null,
+      status: HOMEWORK_RESULT_STATUS.NOT_DONE,
+      grade: null,
+      comment: "",
+      files: [],
+      canGrade: false,
+    };
+  });
+
+  const groupStudentIds = new Set(groupStudents.map((s) => Number(s.id)));
+  const extraSubmissions = [];
+  const addExtra = (item) => {
+    if (item.studentId && !groupStudentIds.has(Number(item.studentId))) {
+      extraSubmissions.push(item);
+    }
+  };
+  pendingRes.forEach(addExtra);
+  acceptedRes.forEach(addExtra);
+  rejectedRes.forEach(addExtra);
+
+  const finalAll = [...allResults, ...extraSubmissions];
+
+  if (status) {
+    return finalAll.filter((item) => item.status === status);
+  }
+  return finalAll;
 }
 
 export async function fetchHomeworkResultsWithCounts(groupId, homeworkId) {
