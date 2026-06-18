@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import crypto from "node:crypto";
 import dns from "node:dns";
-import nodemailer from "nodemailer";
 
 dns.setDefaultResultOrder("ipv4first");
 
@@ -83,42 +82,42 @@ async function changePassword(phone, password) {
 }
 
 async function sendOtpEmail(to, otp) {
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD;
-  if (!user || !pass) throw new Error("GMAIL_USER / GMAIL_APP_PASSWORD sozlanmagan");
+  const apiKey = process.env.BREVO_API_KEY;
+  const sender = process.env.MAIL_FROM || process.env.GMAIL_USER;
+  if (!apiKey || !sender) throw new Error("BREVO_API_KEY / MAIL_FROM (yoki GMAIL_USER) sozlanmagan");
 
-  const { address: ipv4 } = await dns.promises.lookup("smtp.gmail.com", { family: 4 });
-  const transporter = nodemailer.createTransport({
-    host: ipv4,
-    port: 587,
-    secure: false,
-    requireTLS: true,
-    tls: { servername: "smtp.gmail.com" },
-    auth: { user, pass },
-    connectionTimeout: 15000,
-    greetingTimeout: 10000,
-    socketTimeout: 20000,
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": apiKey,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      sender: { email: sender, name: "Najot Edu" },
+      to: [{ email: to }],
+      subject: "Najot Edu — parolni tiklash kodi",
+      textContent: `Parolni tiklash uchun tasdiqlash kodingiz: ${otp}\nKod 5 daqiqa amal qiladi.`,
+      htmlContent: `
+        <div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:auto">
+          <h2 style="color:#223061;margin-bottom:4px">Najot Edu</h2>
+          <p style="color:#444;font-size:15px">Parolni tiklash uchun tasdiqlash kodingiz:</p>
+          <p style="font-size:32px;font-weight:700;letter-spacing:6px;color:#223061;margin:16px 0">${otp}</p>
+          <p style="color:#888;font-size:13px">Kod 5 daqiqa amal qiladi. Agar bu so'rovni siz yubormagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring.</p>
+        </div>`,
+    }),
   });
-  await transporter.sendMail({
-    from: `"Najot Edu" <${user}>`,
-    to,
-    subject: "Najot Edu — parolni tiklash kodi",
-    text: `Parolni tiklash uchun tasdiqlash kodingiz: ${otp}\nKod 5 daqiqa amal qiladi.`,
-    html: `
-      <div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:auto">
-        <h2 style="color:#223061;margin-bottom:4px">Najot Edu</h2>
-        <p style="color:#444;font-size:15px">Parolni tiklash uchun tasdiqlash kodingiz:</p>
-        <p style="font-size:32px;font-weight:700;letter-spacing:6px;color:#223061;margin:16px 0">${otp}</p>
-        <p style="color:#888;font-size:13px">Kod 5 daqiqa amal qiladi. Agar bu so'rovni siz yubormagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring.</p>
-      </div>`,
-  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Email yuborilmadi (${res.status}): ${body.slice(0, 160)}`);
+  }
 }
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (_req, res) => res.json({ ok: true, service: "najot-edu-email", version: "ipv4-resolve-2" }));
+app.get("/", (_req, res) => res.json({ ok: true, service: "najot-edu-email", version: "brevo-1" }));
 
 app.post("/email/send", async (req, res) => {
   try {
