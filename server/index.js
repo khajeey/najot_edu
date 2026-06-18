@@ -1,7 +1,10 @@
 import express from "express";
 import cors from "cors";
 import crypto from "node:crypto";
+import dns from "node:dns";
 import nodemailer from "nodemailer";
+
+dns.setDefaultResultOrder("ipv4first");
 
 const SECRET = process.env.OTP_SECRET || "dev-insecure-secret-change-me";
 const UPSTREAM = process.env.UPSTREAM_API || "https://najot-edu.softwareengineer.uz/api/v1";
@@ -89,6 +92,7 @@ async function sendOtpEmail(to, otp) {
     port: 587,
     secure: false,
     requireTLS: true,
+    family: 4,
     auth: { user, pass },
     connectionTimeout: 15000,
     greetingTimeout: 10000,
