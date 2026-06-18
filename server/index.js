@@ -87,12 +87,13 @@ async function sendOtpEmail(to, otp) {
   const pass = process.env.GMAIL_APP_PASSWORD;
   if (!user || !pass) throw new Error("GMAIL_USER / GMAIL_APP_PASSWORD sozlanmagan");
 
+  const { address: ipv4 } = await dns.promises.lookup("smtp.gmail.com", { family: 4 });
   const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: ipv4,
     port: 587,
     secure: false,
     requireTLS: true,
-    family: 4,
+    tls: { servername: "smtp.gmail.com" },
     auth: { user, pass },
     connectionTimeout: 15000,
     greetingTimeout: 10000,
@@ -117,7 +118,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (_req, res) => res.json({ ok: true, service: "najot-edu-email" }));
+app.get("/", (_req, res) => res.json({ ok: true, service: "najot-edu-email", version: "ipv4-resolve-2" }));
 
 app.post("/email/send", async (req, res) => {
   try {
