@@ -21,7 +21,8 @@ const recoveryClient = axios.create({
     (import.meta.env.DEV ? "/api/v1" : `${API_ORIGIN}/api/v1`),
 });
 
-const emailClient = axios.create({ baseURL: "/api/email" });
+const EMAIL_API = import.meta.env.VITE_EMAIL_API || "https://najot-edu-email.onrender.com";
+const emailClient = axios.create({ baseURL: `${EMAIL_API}/email` });
 
 function normalizePhone(raw) {
   let digits = String(raw || "").replace(/\D/g, "");
