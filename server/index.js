@@ -84,7 +84,16 @@ async function sendOtpEmail(to, otp) {
   const pass = process.env.GMAIL_APP_PASSWORD;
   if (!user || !pass) throw new Error("GMAIL_USER / GMAIL_APP_PASSWORD sozlanmagan");
 
-  const transporter = nodemailer.createTransport({ service: "gmail", auth: { user, pass } });
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    requireTLS: true,
+    auth: { user, pass },
+    connectionTimeout: 15000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
+  });
   await transporter.sendMail({
     from: `"Najot Edu" <${user}>`,
     to,
