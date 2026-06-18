@@ -11,8 +11,27 @@ import {
 } from "@mui/material";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import tatuLogo from "../assets/tatu.png";
-import { api, getApiErrorMessage } from "../api/axiosClient";
+import { getApiErrorMessage } from "../api/axiosClient";
+import { homeRouteForRole } from "../api/auth";
+import ForgotPasswordDialog from "./ForgotPasswordDialog";
+
+const API_ORIGIN = "https://najot-edu.softwareengineer.uz";
+
+const authClient = axios.create({
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.DEV ? "/api/v1" : `${API_ORIGIN}/api/v1`),
+});
+
+function phoneCandidates(raw) {
+  const digits = String(raw || "").replace(/\D/g, "");
+  const normalized = digits.length === 9 ? `998${digits}` : digits;
+  if (!normalized) return [String(raw || "").trim()];
+  const withPlus = `+${normalized}`;
+  return String(raw).trim().startsWith("+") ? [withPlus, normalized] : [normalized, withPlus];
+}
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +39,7 @@ export default function Login() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [isLoading, setIsLoading] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
   const [form, setForm] = useState({
     phone: "998975661099",
     password: "Benazir99!",
@@ -32,29 +52,44 @@ export default function Login() {
     setIsLoading(true);
     setShowAlert(false);
 
-    try {
-      const { data } = await api.post("/auth/login", form);
+    const candidates = phoneCandidates(form.phone);
+    let lastError = null;
 
-      if (!data.success) {
-        throw new Error(data.message || "Login bajarilmadi");
+    for (const phone of candidates) {
+      try {
+        const { data } = await authClient.post("/auth/login", { phone, password: form.password });
+
+        if (!data.success) {
+          throw new Error(data.message || "Login bajarilmadi");
+        }
+
+        localStorage.setItem("accessToken", data.accessToken);
+        setAlertSeverity("success");
+        setAlertMessage(data.message || "Login muvaffaqiyatli bajarildi");
+        setShowAlert(true);
+        setIsLoading(false);
+
+        timerRef.current = setTimeout(() => {
+          setShowAlert(false);
+          navigate(homeRouteForRole());
+        }, 700);
+        return;
+      } catch (error) {
+        lastError = error;
+        const message = error?.response?.data?.message;
+        if (typeof message === "string" && /username/i.test(message)) break;
       }
-
-      localStorage.setItem("accessToken", data.accessToken);
-      setAlertSeverity("success");
-      setAlertMessage(data.message || "Login muvaffaqiyatli bajarildi");
-      setShowAlert(true);
-
-      timerRef.current = setTimeout(() => {
-        setShowAlert(false);
-        navigate("/dashboard");
-      }, 700);
-    } catch (error) {
-      setAlertSeverity("error");
-      setAlertMessage(getApiErrorMessage(error, "Server bilan bog'lanishda xatolik"));
-      setShowAlert(true);
-    } finally {
-      setIsLoading(false);
     }
+
+    const isNetwork = lastError && !lastError.response;
+    setAlertSeverity("error");
+    setAlertMessage(
+      isNetwork
+        ? getApiErrorMessage(lastError, "Server bilan bog'lanishda xatolik")
+        : "Telefon raqam yoki parol noto'g'ri"
+    );
+    setShowAlert(true);
+    setIsLoading(false);
   };
 
   const updateField = (field, value) => {
@@ -193,6 +228,21 @@ export default function Login() {
           >
             {isLoading ? "Kirilmoqda..." : "Kirish"}
           </Button>
+
+          <Typography
+            onClick={() => setForgotOpen(true)}
+            sx={{
+              mt: 1.6,
+              textAlign: "center",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#223061",
+              cursor: "pointer",
+              "&:hover": { textDecoration: "underline" },
+            }}
+          >
+            Parolni unutdingizmi?
+          </Typography>
         </Box>
 
         <Typography
@@ -211,12 +261,26 @@ export default function Login() {
 
         <Snackbar
           open={showAlert}
+          autoHideDuration={3000}
+          onClose={() => setShowAlert(false)}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <Alert severity={alertSeverity} variant="filled" sx={{ width: "100%" }}>
             {alertMessage}
           </Alert>
         </Snackbar>
+
+        <ForgotPasswordDialog
+          open={forgotOpen}
+          onClose={() => setForgotOpen(false)}
+          onDone={(phone) => {
+            setForgotOpen(false);
+            if (phone) setForm((current) => ({ ...current, phone, password: "" }));
+            setAlertSeverity("success");
+            setAlertMessage("Parol o'zgartirildi. Yangi parol bilan kiring.");
+            setShowAlert(true);
+          }}
+        />
       </section>
     </main>
   );

@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import {
   Box,
   Button,
@@ -16,58 +16,45 @@ import {
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   FiBell,
+  FiBarChart2,
   FiCalendar,
   FiChevronDown,
   FiChevronLeft,
   FiChevronRight,
+  FiCreditCard,
   FiHome,
   FiLogOut,
   FiPlus,
+  FiRadio,
   FiSearch,
+  FiSettings,
+  FiShoppingCart,
+  FiUsers,
 } from "react-icons/fi";
-import {
-  FaCog,
-  FaGift,
-  FaLayerGroup,
-  FaMoon,
-  FaSun,
-  FaUserGraduate,
-  FaUserTie,
-} from "react-icons/fa";
-import brandLogo from "../assets/educoin.png";
-import { useColorMode } from "../theme/AppThemeProvider";
-import Settings from "./Settings";
-import SubscriptionCard from "./SubscriptionCard";
-import PageLoader from "./PageLoader";
+import { FaMoon, FaSun } from "react-icons/fa";
+import brandLogo from "../../assets/educoin.png";
+import { useColorMode } from "../../theme/AppThemeProvider";
+import { getUserInitial } from "../../api/auth";
+import PageLoader from "../../components/PageLoader";
 
 const purple = "#7456d8";
+const flame = "#e8740e";
+const flameFill = "#cc9869";
 
 const menuItems = [
-  { label: "Asosiy", path: "/dashboard", icon: FiHome },
-  { label: "O'qituvchilar", path: "/teachers", icon: FaUserTie },
-  { label: "Guruhlar", path: "/groups", icon: FaLayerGroup },
-  { label: "Talabalar", path: "/students", icon: FaUserGraduate },
-  { label: "Sovg'alar", path: "/gifts", icon: FaGift },
-  { label: "Boshqarish", path: "/dashboard/boshqarish", icon: FaCog, arrow: true, settings: true },
+  { label: "Bosh sahifa", path: "/dashboard/home", icon: FiHome },
+  { label: "To'lovlarim", path: "/dashboard/my-payments", icon: FiCreditCard },
+  { label: "Guruhlarim", path: "/dashboard/my-groups", icon: FiUsers },
+  { label: "Ko'rsatkichlarim", path: "/dashboard/my-stats", icon: FiBarChart2 },
+  { label: "Reyting", path: "/dashboard/rating", icon: FiBarChart2 },
+  { label: "Do'kon", path: "/dashboard/shop", icon: FiShoppingCart },
+  { label: "Qo'shimcha darslar", path: "/dashboard/extra-lessons", icon: FiRadio },
+  { label: "Sozlamalar", path: "/dashboard/settings", icon: FiSettings },
 ];
 
-const addMenuItems = [
-  { label: "O'qituvchi qo'shish", path: "/teachers", icon: FaUserTie },
-  { label: "Guruh qo'shish", path: "/groups", icon: FaLayerGroup },
-  { label: "Talaba qo'shish", path: "/students", icon: FaUserGraduate },
-];
-
-export default function MainLayout() {
+export default function StudentLayout() {
   const [collapsed, setCollapsed] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
   const theme = useTheme();
-  const [settingsOpen, setSettingsOpen] = useState(location.pathname.startsWith("/dashboard/boshqarish"));
-  const showSettings = settingsOpen;
-
-  useEffect(() => {
-    setSettingsOpen(location.pathname.startsWith("/dashboard/boshqarish"));
-  }, [location.pathname]);
 
   return (
     <Box
@@ -80,23 +67,7 @@ export default function MainLayout() {
         borderTop: (t) => (t.palette.mode === "dark" ? "2px solid #1f2937" : "2px solid #233333"),
       }}
     >
-      <Sidebar
-        collapsed={collapsed}
-        settingsOpen={showSettings}
-        onOpenSettings={() => setSettingsOpen((prev) => !prev)}
-        onCloseSettings={() => setSettingsOpen(false)}
-        onToggle={() => setCollapsed((value) => !value)}
-      />
-      {showSettings && (
-        <Settings
-          onClose={() => {
-            setSettingsOpen(false);
-            if (location.pathname.startsWith("/dashboard/boshqarish")) {
-              navigate("/dashboard");
-            }
-          }}
-        />
-      )}
+      <Sidebar collapsed={collapsed} />
 
       <Box
         component="main"
@@ -105,25 +76,9 @@ export default function MainLayout() {
           minWidth: 0,
           px: { xs: 2, lg: 3 },
           py: 2.25,
-          position: "relative",
         }}
       >
-        {showSettings && !location.pathname.startsWith("/dashboard/boshqarish") && (
-          <Box
-            onClick={() => setSettingsOpen(false)}
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              bgcolor: "rgba(0, 0, 0, 0.45)",
-              zIndex: 10,
-              cursor: "pointer",
-            }}
-          />
-        )}
-        <Topbar />
+        <Topbar collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)} />
         <Suspense fallback={<PageLoader />}>
           <Outlet />
         </Suspense>
@@ -132,7 +87,7 @@ export default function MainLayout() {
   );
 }
 
-function Sidebar({ collapsed, settingsOpen, onOpenSettings, onCloseSettings, onToggle }) {
+function Sidebar({ collapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -147,7 +102,7 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onCloseSettings, onT
         minHeight: "calc(100vh - 2px)",
         flexShrink: 0,
         bgcolor: "background.paper",
-        borderRadius: settingsOpen ? 0 : "0 22px 22px 0",
+        borderRadius: "0 22px 22px 0",
         display: { xs: "none", md: "flex" },
         flexDirection: "column",
         position: "relative",
@@ -175,63 +130,24 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onCloseSettings, onT
           sx={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }}
         />
         {!collapsed && (
-          <Typography sx={{ color: purple, fontSize: 18, fontWeight: 700, letterSpacing: 0 }}>
-            NajotEdu
-          </Typography>
+          <Typography sx={{ color: purple, fontSize: 18, fontWeight: 700 }}>NajotEdu</Typography>
         )}
       </Box>
-
-      <IconButton
-        aria-label="sidebar"
-        onClick={onToggle}
-        sx={{
-          position: "absolute",
-          right: -17,
-          top: 42,
-          width: 34,
-          height: 34,
-          color: "#fff",
-          bgcolor: purple,
-          boxShadow: "0 8px 18px rgba(70, 51, 148, 0.25)",
-          zIndex: 2,
-          "&:hover": { bgcolor: "#684bcf" },
-        }}
-      >
-        {collapsed ? <FiChevronRight size={22} /> : <FiChevronLeft size={22} />}
-      </IconButton>
 
       <Box sx={{ px: 1.25, display: "flex", flexDirection: "column", gap: 0.8 }}>
         {menuItems.map((item) => {
           const Icon = item.icon;
-          let active = false;
-          if (item.settings) {
-            active = location.pathname.startsWith("/dashboard/boshqarish") || settingsOpen;
-          } else if (item.path === "/dashboard") {
-            active = location.pathname === "/dashboard" && !settingsOpen;
-          } else {
-            active = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
-          }
-
-          const handleClick = () => {
-            if (item.settings) {
-              onOpenSettings();
-              return;
-            }
-
-            onCloseSettings();
-            navigate(item.path);
-          };
+          const active =
+            location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
 
           return (
             <Tooltip key={item.path} title={collapsed ? item.label : ""} placement="right" arrow>
               <Box
                 role="button"
                 tabIndex={0}
-                onClick={handleClick}
+                onClick={() => navigate(item.path)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    handleClick();
-                  }
+                  if (event.key === "Enter" || event.key === " ") navigate(item.path);
                 }}
                 sx={{
                   height: 54,
@@ -241,30 +157,22 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onCloseSettings, onT
                   alignItems: "center",
                   justifyContent: collapsed ? "center" : "flex-start",
                   gap: 2,
-                  bgcolor: active ? (isDark ? "#252f47" : "#eee8fb") : "transparent",
-                  color: active ? purple : "text.secondary",
+                  bgcolor: active ? (isDark ? "#2b2017" : "#faf3ee") : "transparent",
+                  color: active ? flame : "text.secondary",
                   cursor: "pointer",
                   outline: "none",
                   transition: "background-color 160ms ease, color 160ms ease",
                   "&:hover": {
-                    bgcolor: active ? (isDark ? "#252f47" : "#eee8fb") : "action.hover",
-                    color: purple,
+                    bgcolor: active ? (isDark ? "#2b2017" : "#faf3ee") : "action.hover",
+                    color: flame,
                   },
                 }}
               >
                 <Icon size={20} />
                 {!collapsed && (
-                  <>
-                    <Typography sx={{ flex: 1, fontSize: 15, fontWeight: 600 }}>
-                      {item.label}
-                    </Typography>
-                    {item.arrow &&
-                      (settingsOpen || location.pathname.startsWith("/dashboard/boshqarish") ? (
-                        <FiChevronDown size={22} color={purple} />
-                      ) : (
-                        <FiChevronRight size={22} color="#9aa0a8" />
-                      ))}
-                  </>
+                  <Typography sx={{ flex: 1, fontSize: 15, fontWeight: 600 }}>
+                    {item.label}
+                  </Typography>
                 )}
               </Box>
             </Tooltip>
@@ -273,13 +181,11 @@ function Sidebar({ collapsed, settingsOpen, onOpenSettings, onCloseSettings, onT
       </Box>
 
       <Box sx={{ flex: 1 }} />
-
-      <SubscriptionCard collapsed={collapsed} />
     </Paper>
   );
 }
 
-function Topbar() {
+function Topbar({ collapsed, onToggle }) {
   const theme = useTheme();
   const { mode, toggleColorMode } = useColorMode();
   const isDark = theme.palette.mode === "dark";
@@ -287,6 +193,7 @@ function Topbar() {
 
   const [calendarAnchor, setCalendarAnchor] = useState(null);
   const [addAnchor, setAddAnchor] = useState(null);
+  const [profileAnchor, setProfileAnchor] = useState(null);
 
   const today = new Date();
   const todayLabel = new Intl.DateTimeFormat("uz-UZ", {
@@ -301,11 +208,6 @@ function Topbar() {
     navigate("/login", { replace: true });
   };
 
-  const handleQuickAdd = (path) => {
-    setAddAnchor(null);
-    navigate(path, { state: { openCreate: true } });
-  };
-
   return (
     <Box
       sx={{
@@ -318,6 +220,22 @@ function Topbar() {
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.4, minWidth: 0 }}>
+        <IconButton
+          aria-label="collapse"
+          onClick={onToggle}
+          sx={{
+            width: 44,
+            height: 44,
+            borderRadius: "11px",
+            bgcolor: flameFill,
+            color: "#fff",
+            boxShadow: "0 2px 8px rgba(204, 152, 105, 0.4)",
+            "&:hover": { bgcolor: "#bf8a5c" },
+          }}
+        >
+          {collapsed ? <FiChevronRight size={22} /> : <FiChevronLeft size={22} />}
+        </IconButton>
+
         <Tooltip title="Bugungi sana">
           <IconButton
             aria-label="calendar"
@@ -334,15 +252,9 @@ function Topbar() {
           onClose={() => setCalendarAnchor(null)}
           anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
           transformOrigin={{ vertical: "top", horizontal: "left" }}
-          slotProps={{
-            paper: {
-              sx: { mt: 1, borderRadius: "12px", p: 2, minWidth: 260 },
-            },
-          }}
+          slotProps={{ paper: { sx: { mt: 1, borderRadius: "12px", p: 2, minWidth: 260 } } }}
         >
-          <Typography sx={{ fontSize: 13, color: "text.secondary", mb: 0.5 }}>
-            Bugun
-          </Typography>
+          <Typography sx={{ fontSize: 13, color: "text.secondary", mb: 0.5 }}>Bugun</Typography>
           <Typography sx={{ fontSize: 16, fontWeight: 700, color: "text.primary" }}>
             {todayLabel}
           </Typography>
@@ -372,23 +284,28 @@ function Topbar() {
           anchorEl={addAnchor}
           open={Boolean(addAnchor)}
           onClose={() => setAddAnchor(null)}
-          slotProps={{
-            paper: { sx: { mt: 1, borderRadius: "12px", minWidth: 220 } },
-          }}
+          slotProps={{ paper: { sx: { mt: 1, borderRadius: "12px", minWidth: 220 } } }}
         >
-          {addMenuItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <MenuItem
-                key={item.path}
-                onClick={() => handleQuickAdd(item.path)}
-                sx={{ gap: 1.5, py: 1.2, fontSize: 14, fontWeight: 600 }}
-              >
-                <Icon size={18} color={purple} />
-                {item.label}
-              </MenuItem>
-            );
-          })}
+          <MenuItem
+            onClick={() => {
+              setAddAnchor(null);
+              navigate("/dashboard/extra-lessons");
+            }}
+            sx={{ gap: 1.5, py: 1.2, fontSize: 14, fontWeight: 600 }}
+          >
+            <FiRadio size={18} color={purple} />
+            Qo'shimcha darsga yozilish
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setAddAnchor(null);
+              navigate("/dashboard/shop");
+            }}
+            sx={{ gap: 1.5, py: 1.2, fontSize: 14, fontWeight: 600 }}
+          >
+            <FiShoppingCart size={18} color={purple} />
+            Do'kondan xarid
+          </MenuItem>
         </Menu>
 
         <Paper
@@ -396,7 +313,6 @@ function Topbar() {
           sx={{
             height: 44,
             width: { xs: 190, lg: 250 },
-            ml: 0.1,
             px: 1.7,
             borderRadius: "10px",
             bgcolor: "background.paper",
@@ -444,11 +360,13 @@ function Topbar() {
         <IconButton sx={surfaceIconButton}>
           <FiBell size={20} />
         </IconButton>
+
         <Tooltip title="Chiqish">
           <IconButton onClick={handleLogout} sx={surfaceIconButton} aria-label="logout">
             <FiLogOut size={18} />
           </IconButton>
         </Tooltip>
+
         <IconButton
           aria-label="toggle theme"
           onClick={toggleColorMode}
@@ -456,16 +374,61 @@ function Topbar() {
             ...surfaceIconButton,
             bgcolor: isDark ? "#fbbf24" : "#303d59",
             color: isDark ? "#1f2937" : "#fff",
-            "&:hover": {
-              bgcolor: isDark ? "#f59e0b" : "#303d59",
-            },
+            "&:hover": { bgcolor: isDark ? "#f59e0b" : "#303d59" },
           }}
         >
           {isDark ? <FaSun size={20} /> : <FaMoon size={20} />}
         </IconButton>
-        <Tooltip title="NajotEdu">
-          <Box component="img" src={brandLogo} alt="NajotEdu" sx={{ width: 40, height: 40, objectFit: "contain" }} />
-        </Tooltip>
+
+        <IconButton
+          onClick={(event) => setProfileAnchor(event.currentTarget)}
+          sx={{ p: 0, ml: 0.4 }}
+          aria-label="profil"
+        >
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              bgcolor: purple,
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+              fontWeight: 700,
+            }}
+          >
+            {getUserInitial()}
+          </Box>
+        </IconButton>
+
+        <Menu
+          anchorEl={profileAnchor}
+          open={Boolean(profileAnchor)}
+          onClose={() => setProfileAnchor(null)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          slotProps={{ paper: { sx: { mt: 1, borderRadius: "12px", minWidth: 180 } } }}
+        >
+          <MenuItem
+            onClick={() => {
+              setProfileAnchor(null);
+              navigate("/dashboard/settings");
+            }}
+            sx={{ gap: 1.5, py: 1.2, fontSize: 14, fontWeight: 600 }}
+          >
+            <FiSettings size={18} />
+            Sozlamalar
+          </MenuItem>
+          <MenuItem
+            onClick={handleLogout}
+            sx={{ gap: 1.5, py: 1.2, fontSize: 14, fontWeight: 600, color: "#ef4444" }}
+          >
+            <FiLogOut size={18} />
+            Chiqish
+          </MenuItem>
+        </Menu>
       </Box>
     </Box>
   );
@@ -479,7 +442,6 @@ const surfaceIconButton = {
   color: "text.primary",
   border: "1px solid",
   borderColor: "divider",
-  boxShadow: (theme) =>
-    theme.palette.mode === "dark" ? "none" : "0 1px 8px rgba(0,0,0,0.06)",
+  boxShadow: (theme) => (theme.palette.mode === "dark" ? "none" : "0 1px 8px rgba(0,0,0,0.06)"),
   "&:hover": { bgcolor: "action.hover" },
 };
