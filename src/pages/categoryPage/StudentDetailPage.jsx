@@ -1,19 +1,25 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Paper,
   Typography,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
-import { FiArrowLeft, FiMail, FiMapPin, FiPhone } from "react-icons/fi";
+import { FiArrowLeft, FiEdit2, FiMail, FiMapPin, FiPhone, FiTrash2 } from "react-icons/fi";
 import { FaLayerGroup } from "react-icons/fa";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import { purple } from "./constants";
-
+import StudentDrawer from "./StudentDrawer";
+import { isValidUzPhone, normalizePhone } from "../../utils/phone";
 import { getProfilePhotoUrl } from "../../utils/photos";
 
 export default function StudentDetailPage() {
@@ -22,29 +28,100 @@ export default function StudentDetailPage() {
   const [student, setStudent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [actionError, setActionError] = useState("");
+
+  const loadStudent = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const { data } = await api.get(`/students/one/${studentId}`);
+
+      if (!data.success) {
+        throw new Error(data.message || "Talaba topilmadi");
+      }
+
+      setStudent(normalizeStudentDetail(data.data));
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error, "Talaba ma'lumotlarini yuklashda xatolik"));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [studentId]);
 
   useEffect(() => {
-    const load = async () => {
-      setIsLoading(true);
-      setErrorMessage("");
+    loadStudent();
+  }, [loadStudent]);
 
-      try {
-        const { data } = await api.get(`/students/one/${studentId}`);
+  const handleSave = async (payload) => {
+    setActionError("");
 
-        if (!data.success) {
-          throw new Error(data.message || "Talaba topilmadi");
-        }
+    if (!isValidUzPhone(payload.phone)) {
+      setActionError("Telefon raqamini to'liq kiriting: +998 va 9 ta raqam");
+      return;
+    }
 
-        setStudent(normalizeStudentDetail(data.data));
-      } catch (error) {
-        setErrorMessage(getApiErrorMessage(error, "Talaba ma'lumotlarini yuklashda xatolik"));
-      } finally {
-        setIsLoading(false);
+    if (!/^\S+@\S+\.\S+$/.test(payload.email.trim())) {
+      setActionError("Email manzilini to'g'ri kiriting (masalan: ism@example.com)");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+
+      formData.append("full_name", payload.name);
+      formData.append("email", payload.email.trim());
+      formData.append("phone", normalizePhone(payload.phone));
+      formData.append("address", payload.address);
+      formData.append("birth_date", payload.birthDateRaw);
+
+      if (payload.password) {
+        formData.append("password", payload.password);
       }
-    };
 
-    load();
-  }, [studentId]);
+      if (payload.photo) {
+        formData.append("photo", payload.photo);
+      }
+
+      payload.groupIds.forEach((groupId) => {
+        formData.append("groups", String(groupId));
+      });
+
+      const { data } = await api.patch(`/students/${student.id}`, formData);
+
+      if (!data.success) {
+        throw new Error(data.message || "Talabani saqlashda xatolik");
+      }
+
+      setDrawerOpen(false);
+      await loadStudent();
+    } catch (error) {
+      setActionError(getApiErrorMessage(error, "Talabani saqlashda xatolik"));
+    }
+  };
+
+  const handleDelete = async () => {
+    setActionError("");
+    setIsDeleting(true);
+
+    try {
+      const { data } = await api.delete(`/students/${student.id}`);
+
+      if (!data.success) {
+        throw new Error(data.message || "Talabani o'chirishda xatolik");
+      }
+
+      setDeleteOpen(false);
+      navigate("/students");
+    } catch (error) {
+      setActionError(getApiErrorMessage(error, "Talabani o'chirishda xatolik"));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -69,12 +146,25 @@ export default function StudentDetailPage() {
 
   return (
     <Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3, flexWrap: "wrap" }}>
         <IconButton onClick={() => navigate(-1)} sx={roundIconButtonStyles}>
           <FiArrowLeft size={20} />
         </IconButton>
         <Typography sx={{ fontSize: 28, fontWeight: 700 }}>Talaba profili</Typography>
+
+        <Box sx={{ flex: 1 }} />
+
+        <Button startIcon={<FiEdit2 size={18} />} onClick={() => setDrawerOpen(true)} sx={editButtonStyles}>
+          Tahrirlash
+        </Button>
+        <Button startIcon={<FiTrash2 size={18} />} onClick={() => setDeleteOpen(true)} sx={deleteButtonStyles}>
+          O'chirish
+        </Button>
       </Box>
+
+      {actionError && (
+        <Typography sx={{ mb: 2, color: "#ef4444", fontWeight: 600 }}>{actionError}</Typography>
+      )}
 
       <Paper elevation={0} sx={heroPaperStyles}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2.5, flexWrap: "wrap" }}>
@@ -146,6 +236,30 @@ export default function StudentDetailPage() {
           </Box>
         </Paper>
       </Box>
+
+      <StudentDrawer
+        open={drawerOpen}
+        initialData={drawerOpen ? student : null}
+        onClose={() => setDrawerOpen(false)}
+        onSave={handleSave}
+      />
+
+      <Dialog open={deleteOpen} onClose={() => (isDeleting ? null : setDeleteOpen(false))}>
+        <DialogTitle sx={{ fontWeight: 700 }}>Talabani o'chirish</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            <strong>{student.name}</strong>ni o'chirmoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDeleteOpen(false)} disabled={isDeleting} sx={{ textTransform: "none", color: "text.secondary", fontWeight: 700 }}>
+            Bekor qilish
+          </Button>
+          <Button onClick={handleDelete} disabled={isDeleting} sx={confirmDeleteStyles}>
+            {isDeleting ? "O'chirilmoqda..." : "O'chirish"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
@@ -169,10 +283,17 @@ function normalizeStudentDetail(student) {
     email: student.email || "—",
     address: student.address || "—",
     birthDate: formatDate(student.birth_date),
+    birthDateRaw: toInputDate(student.birth_date),
     createdAt: formatDate(student.created_at),
     isActive: student.is_active ?? true,
     groups,
+    groupIds: groups.map((group) => group.id).filter(Boolean),
   };
+}
+
+function toInputDate(value) {
+  if (!value) return "";
+  return new Date(value).toISOString().slice(0, 10);
 }
 
 function formatDate(value) {
@@ -210,6 +331,40 @@ const roundIconButtonStyles = {
   border: "1px solid",
   borderColor: "divider",
   bgcolor: "background.paper",
+};
+
+const editButtonStyles = {
+  textTransform: "none",
+  fontWeight: 700,
+  fontSize: 14,
+  px: 2,
+  height: 40,
+  borderRadius: "10px",
+  border: "1px solid",
+  borderColor: "divider",
+  color: purple,
+  "&:hover": { bgcolor: "#faf8ff", borderColor: "#d8cff5" },
+};
+
+const deleteButtonStyles = {
+  textTransform: "none",
+  fontWeight: 700,
+  fontSize: 14,
+  px: 2,
+  height: 40,
+  borderRadius: "10px",
+  bgcolor: "#fee2e2",
+  color: "#dc2626",
+  "&:hover": { bgcolor: "#fecaca" },
+};
+
+const confirmDeleteStyles = {
+  textTransform: "none",
+  fontWeight: 700,
+  px: 2.4,
+  bgcolor: "#dc2626",
+  color: "#fff",
+  "&:hover": { bgcolor: "#b91c1c" },
 };
 
 const heroPaperStyles = {
