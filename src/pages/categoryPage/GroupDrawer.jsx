@@ -166,20 +166,20 @@ export default function GroupDrawer({ open, onClose, onSave, initialData }) {
           },
         }}
       >
-        <Box sx={{ height: "100%", display: "flex", flexDirection: "column", bgcolor: "#fff" }}>
-          <Box sx={{ px: 2, py: 1.8, borderBottom: "1px solid #f0f1f4" }}>
+        <Box sx={{ height: "100%", display: "flex", flexDirection: "column", bgcolor: "background.paper" }}>
+          <Box sx={{ px: 2, py: 1.8, borderBottom: "1px solid", borderColor: "divider" }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <Box>
-                <Typography sx={{ fontSize: 17, fontWeight: 700, color: "#252932" }}>
+                <Typography sx={{ fontSize: 17, fontWeight: 700, color: "text.primary" }}>
                   {isEdit ? "Guruhni tahrirlash" : "Guruh qo'shish"}
                 </Typography>
-                <Typography sx={{ mt: 0.5, fontSize: 11.5, color: "#626976" }}>
+                <Typography sx={{ mt: 0.5, fontSize: 11.5, color: "text.secondary" }}>
                   {isEdit
                     ? "Guruh ma'lumotlarini yangilang."
                     : "Yangi guruh yaratish uchun quyidagi ma'lumotlarni kiriting."}
                 </Typography>
               </Box>
-              <IconButton onClick={onClose} sx={{ mt: -0.8, mr: -0.8, color: "#a4a8ae" }}>
+              <IconButton onClick={onClose} sx={{ mt: -0.8, mr: -0.8, color: "text.secondary" }}>
                 <FiX size={18} />
               </IconButton>
             </Box>
@@ -255,16 +255,17 @@ export default function GroupDrawer({ open, onClose, onSave, initialData }) {
                         sx={{
                           height: 31,
                           borderRadius: "6px",
-                          border: "1px solid #e2e5eb",
+                          border: "1px solid",
+                          borderColor: "divider",
                           display: "flex",
                           alignItems: "center",
                           px: 0.8,
                           cursor: "pointer",
-                          bgcolor: form.days.includes(day) ? "#f5f1ff" : "#fff",
+                          bgcolor: form.days.includes(day) ? "#f5f1ff" : "background.paper",
                         }}
                       >
                         <Checkbox checked={form.days.includes(day)} size="small" sx={{ p: 0.3, mr: 0.5 }} />
-                        <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#3f4650" }}>{day}</Typography>
+                        <Typography sx={{ fontSize: 12, fontWeight: 700, color: "text.primary" }}>{day}</Typography>
                       </Box>
                     ))}
                   </Box>
@@ -330,7 +331,7 @@ export default function GroupDrawer({ open, onClose, onSave, initialData }) {
             )}
           </Box>
 
-          <Box sx={{ px: 2, py: 1.4, borderTop: "1px solid #eceef2", display: "flex", justifyContent: "flex-end", gap: 1 }}>
+          <Box sx={{ px: 2, py: 1.4, borderTop: "1px solid", borderColor: "divider", display: "flex", justifyContent: "flex-end", gap: 1 }}>
             <Button onClick={onClose} variant="outlined" sx={cancelButtonStyles} disabled={saving}>
               Bekor qilish
             </Button>
@@ -396,10 +397,10 @@ function PeoplePickerDialog({ open, title, items, selected, onClose, onSave }) {
     <Dialog open={open} onClose={onClose} PaperProps={{ sx: { width: 385, borderRadius: "4px" } }}>
       <DialogTitle sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", pb: 1 }}>
         <Box>
-          <Typography sx={{ fontSize: 21, fontWeight: 700, color: "#222733" }}>{title}</Typography>
-          <Typography sx={{ mt: 0.4, fontSize: 12, color: "#686f7a" }}>Bitta yoki bir nechta tanlang</Typography>
+          <Typography sx={{ fontSize: 21, fontWeight: 700, color: "text.primary" }}>{title}</Typography>
+          <Typography sx={{ mt: 0.4, fontSize: 12, color: "text.secondary" }}>Bitta yoki bir nechta tanlang</Typography>
         </Box>
-        <IconButton onClick={onClose} sx={{ color: "#969ba3", mr: -1 }}>
+        <IconButton onClick={onClose} sx={{ color: "text.secondary", mr: -1 }}>
           <FiX size={22} />
         </IconButton>
       </DialogTitle>
@@ -418,7 +419,7 @@ function PeoplePickerDialog({ open, title, items, selected, onClose, onSave }) {
           }}
           sx={pickerSearchStyles}
         />
-        <Box sx={{ mt: 1.4, border: "1px solid #e7e9ef", borderRadius: "8px", overflow: "hidden", maxHeight: 320, overflowY: "auto" }}>
+        <Box sx={{ mt: 1.4, border: "1px solid", borderColor: "divider", borderRadius: "8px", overflow: "hidden", maxHeight: 320, overflowY: "auto" }}>
           {filteredItems.map((item) => {
             const id = getId(item);
             const label = getLabel(item);
@@ -430,7 +431,8 @@ function PeoplePickerDialog({ open, title, items, selected, onClose, onSave }) {
                 sx={{
                   height: 49,
                   px: 1.5,
-                  borderBottom: "1px solid #edf0f4",
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
                   display: "flex",
                   alignItems: "center",
                   gap: 1,
@@ -439,19 +441,19 @@ function PeoplePickerDialog({ open, title, items, selected, onClose, onSave }) {
                 }}
               >
                 <Checkbox checked={localSelected.includes(id)} size="small" />
-                <Typography sx={{ fontSize: 14, color: "#4b535e" }}>{label}</Typography>
+                <Typography sx={{ fontSize: 14, color: "text.secondary" }}>{label}</Typography>
               </Box>
             );
           })}
           {filteredItems.length === 0 && (
-            <Typography sx={{ py: 3, textAlign: "center", color: "#9ba0a8", fontSize: 14 }}>
+            <Typography sx={{ py: 3, textAlign: "center", color: "text.secondary", fontSize: 14 }}>
               Natija topilmadi
             </Typography>
           )}
         </Box>
       </DialogContent>
-      <DialogActions sx={{ px: 3, py: 2, borderTop: "1px solid #eceef2" }}>
-        <Button onClick={onClose} sx={{ textTransform: "none", color: "#4d5662", fontWeight: 700 }}>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: "1px solid", borderColor: "divider" }}>
+        <Button onClick={onClose} sx={{ textTransform: "none", color: "text.secondary", fontWeight: 700 }}>
           Bekor qilish
         </Button>
         <Button
@@ -475,7 +477,7 @@ function PeoplePickerDialog({ open, title, items, selected, onClose, onSave }) {
 function FormField({ label, required, children }) {
   return (
     <Box sx={{ mt: 1.5 }}>
-      <Typography sx={{ mb: 0.6, fontSize: 12, fontWeight: 700, color: "#3f4650" }}>
+      <Typography sx={{ mb: 0.6, fontSize: 12, fontWeight: 700, color: "text.primary" }}>
         {label}
         {required && (
           <Box component="span" sx={{ color: "#e54848" }}>
@@ -494,36 +496,37 @@ const inputStyles = {
     height: 36,
     borderRadius: "6px",
     fontSize: 13,
-    "& fieldset": { borderColor: "#e2e5eb" },
+    "& fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
-  "& .MuiOutlinedInput-input::placeholder": { color: "#a0a4ab", opacity: 1 },
+  "& .MuiOutlinedInput-input::placeholder": { color: "text.secondary", opacity: 1 },
 };
 
 const selectStyles = {
   height: 36,
   borderRadius: "6px",
   fontSize: 13,
-  "& fieldset": { borderColor: "#e2e5eb" },
+  "& fieldset": { borderColor: "divider" },
   "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
-  "& .MuiSelect-icon": { right: 10, color: "#8d929a" },
+  "& .MuiSelect-icon": { right: 10, color: "text.secondary" },
 };
 
 const textareaStyles = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "6px",
     fontSize: 13,
-    "& fieldset": { borderColor: "#e2e5eb" },
+    "& fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
-  "& .MuiOutlinedInput-input::placeholder": { color: "#a0a4ab", opacity: 1 },
+  "& .MuiOutlinedInput-input::placeholder": { color: "text.secondary", opacity: 1 },
 };
 
 const addPeopleButtonStyles = {
   width: "100%",
   height: 42,
   borderRadius: "6px",
-  border: "1px solid #e2e5eb",
+  border: "1px solid",
+  borderColor: "divider",
   color: purple,
   justifyContent: "flex-start",
   px: 2,
@@ -537,8 +540,8 @@ const cancelButtonStyles = {
   width: 96,
   height: 34,
   borderRadius: "7px",
-  borderColor: "#dfe4ee",
-  color: "#343843",
+  borderColor: "divider",
+  color: "text.primary",
   fontSize: 12,
   fontWeight: 700,
   textTransform: "none",
@@ -561,7 +564,7 @@ const pickerSearchStyles = {
     height: 34,
     borderRadius: "5px",
     fontSize: 13,
-    "& fieldset": { borderColor: "#e2e5eb" },
+    "& fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
 };

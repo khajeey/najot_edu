@@ -19,10 +19,8 @@ function DayCell({ lesson, isSelected, onDayClick }) {
         borderRadius: "8px",
         border: isSelected
           ? `1px solid ${green}`
-          : isPast
-            ? "1px solid"
-            : "1px solid #d8dbe2",
-        borderColor: isSelected ? green : isPast ? "divider" : "#d8dbe2",
+          : "1px solid",
+        borderColor: isSelected ? green : "divider",
         bgcolor: isSelected ? green : isPast ? "action.hover" : "background.paper",
         display: "flex",
         flexDirection: "column",

@@ -108,10 +108,10 @@ export default function DataCard({ item, onEdit, onDelete, isArchived }) {
 const cardActionButton = {
   width: 32,
   height: 32,
-  color: "#8b919a",
+  color: "text.secondary",
   borderRadius: "7px",
   "&:hover": {
-    bgcolor: "#ebeef5",
+    bgcolor: "action.hover",
     color: purple,
   },
 };

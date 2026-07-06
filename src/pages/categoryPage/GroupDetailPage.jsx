@@ -190,7 +190,7 @@ export default function GroupDetailPage() {
           </IconButton>
           <Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, flexWrap: "wrap" }}>
-              <Typography sx={{ fontSize: 28, fontWeight: 700, color: "#10131a" }}>{group.name}</Typography>
+              <Typography sx={{ fontSize: 28, fontWeight: 700, color: "text.primary" }}>{group.name}</Typography>
               <Chip
                 label={group.isActive ? "Aktiv" : "Nofaol"}
                 size="small"
@@ -220,7 +220,7 @@ export default function GroupDetailPage() {
             textTransform: "none",
             fontSize: 18,
             fontWeight: 600,
-            color: "#8c9199",
+            color: "text.secondary",
             minHeight: 42,
           },
           "& .Mui-selected": { color: purple },
@@ -262,7 +262,7 @@ export default function GroupDetailPage() {
                           width: 52,
                           height: 52,
                           borderRadius: "10px",
-                          bgcolor: "#eef0f4",
+                          bgcolor: "action.hover",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -282,7 +282,7 @@ export default function GroupDetailPage() {
                     </Box>
                   ))
                 ) : (
-                  <Typography sx={{ color: "#9ba0a8" }}>Mentor biriktirilmagan</Typography>
+                  <Typography sx={{ color: "text.secondary" }}>Mentor biriktirilmagan</Typography>
                 )}
               </Box>
             </InfoPanel>
@@ -298,11 +298,12 @@ export default function GroupDetailPage() {
                       gap: 2,
                       px: 2.2,
                       py: 1.35,
-                      borderBottom: index < parameters.length - 1 ? "1px solid #edf0f4" : "none",
+                      borderBottom: index < parameters.length - 1 ? "1px solid" : "none",
+                      borderColor: "divider",
                     }}
                   >
-                    <Typography sx={{ color: "#6b7280", fontSize: 15 }}>{row.label}</Typography>
-                    <Typography sx={{ fontWeight: 700, fontSize: 15, color: "#111827", textAlign: "right" }}>
+                    <Typography sx={{ color: "text.secondary", fontSize: 15 }}>{row.label}</Typography>
+                    <Typography sx={{ fontWeight: 700, fontSize: 15, color: "text.primary", textAlign: "right" }}>
                       {row.value}
                     </Typography>
                   </Box>
@@ -322,7 +323,8 @@ export default function GroupDetailPage() {
                     gridTemplateColumns: "1.4fr 0.8fr 1.2fr 1.4fr 0.8fr",
                     gap: 2,
                     py: 1.4,
-                    borderBottom: "1px solid #edf0f4",
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
                     alignItems: "center",
                   }}
                 >
@@ -332,14 +334,14 @@ export default function GroupDetailPage() {
                   >
                     {row.name}
                   </Typography>
-                  <Typography sx={{ fontWeight: 600, color: "#4b5563" }}>{row.days || "—"}</Typography>
-                  <Typography sx={{ fontWeight: 600, color: "#111827" }}>{row.time}</Typography>
-                  <Typography sx={{ color: "#6b7280", fontSize: 14 }}>{row.dateRange}</Typography>
-                  <Typography sx={{ fontWeight: 700, color: "#111827" }}>{row.room || "—"}</Typography>
+                  <Typography sx={{ fontWeight: 600, color: "text.secondary" }}>{row.days || "—"}</Typography>
+                  <Typography sx={{ fontWeight: 600, color: "text.primary" }}>{row.time}</Typography>
+                  <Typography sx={{ color: "text.secondary", fontSize: 14 }}>{row.dateRange}</Typography>
+                  <Typography sx={{ fontWeight: 700, color: "text.primary" }}>{row.room || "—"}</Typography>
                 </Box>
               ))}
               {lessonRows.length === 0 && (
-                <Typography sx={{ py: 3, color: "#9ba0a8", textAlign: "center" }}>Dars jadvali mavjud emas</Typography>
+                <Typography sx={{ py: 3, color: "text.secondary", textAlign: "center" }}>Dars jadvali mavjud emas</Typography>
               )}
               {lessonRows.length > 3 && (
                 <Button onClick={() => setShowAllRows((value) => !value)} sx={linkButtonStyles}>
@@ -401,7 +403,7 @@ function computeAverageAgeForGroup(students, groupId) {
 
 function InfoPanel({ title, children }) {
   return (
-    <Paper elevation={0} sx={{ borderRadius: "12px", overflow: "hidden", border: "1px solid #e7e9ef" }}>
+    <Paper elevation={0} sx={{ borderRadius: "12px", overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
       <Box
         sx={{
           height: 48,
@@ -425,15 +427,16 @@ function InfoPanel({ title, children }) {
 
 const backButtonStyles = {
   textTransform: "none",
-  color: "#4b5563",
+  color: "text.secondary",
   fontWeight: 700,
 };
 
 const roundIconButtonStyles = {
   width: 40,
   height: 40,
-  border: "1px solid #e5e7eb",
-  bgcolor: "#fff",
+  border: "1px solid",
+  borderColor: "divider",
+  bgcolor: "background.paper",
 };
 
 const activeChipStyles = {
@@ -455,8 +458,8 @@ const statsButtonStyles = {
   borderRadius: "8px",
   textTransform: "none",
   fontWeight: 700,
-  color: "#374151",
-  borderColor: "#dfe4ee",
+  color: "text.primary",
+  borderColor: "divider",
 };
 
 const teacherChipStyles = {
@@ -469,15 +472,16 @@ const teacherChipStyles = {
 
 const sectionPaperStyles = {
   borderRadius: "12px",
-  bgcolor: "#fff",
-  border: "1px solid #e7e9ef",
+  bgcolor: "background.paper",
+  border: "1px solid",
+  borderColor: "divider",
   p: 2.5,
 };
 
 const sectionTitleStyles = {
   fontSize: 22,
   fontWeight: 700,
-  color: "#111827",
+  color: "text.primary",
 };
 
 const linkButtonStyles = {

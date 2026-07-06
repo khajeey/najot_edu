@@ -76,7 +76,7 @@ export default function Settings({ onClose }) {
                 cursor: "pointer",
                 outline: "none",
                 bgcolor: active ? "#f0eafb" : "transparent",
-                color: active ? purple : "#565b65",
+                color: active ? purple : "text.secondary",
                 transition: "background-color 160ms ease, color 160ms ease",
                 "&:hover": {
                   bgcolor: "#f0eafb",

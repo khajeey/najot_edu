@@ -145,7 +145,7 @@ const inputStyles = {
     borderRadius: "11px",
     fontSize: 17,
     "& fieldset": { borderColor: "divider" },
-    "&:hover fieldset": { borderColor: "#cfd6e2" },
+    "&:hover fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
 };

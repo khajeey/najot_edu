@@ -128,10 +128,10 @@ export default function GroupVideosTab({ groupId, openUpload, onUploadClosed }) 
 
   return (
     <Box>
-      <Paper elevation={0} sx={{ borderRadius: "12px", border: "1px solid #e7e9ef", bgcolor: "#fff", overflow: "hidden" }}>
+      <Paper elevation={0} sx={{ borderRadius: "12px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", overflow: "hidden" }}>
         <Table sx={{ minWidth: 1100 }}>
           <TableHead>
-            <TableRow sx={{ bgcolor: "#fafbfc" }}>
+            <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell sx={headCellStyles}>#</TableCell>
               <TableCell sx={headCellStyles}>Video nomi</TableCell>
               <TableCell sx={headCellStyles}>Dars nomi</TableCell>
@@ -183,7 +183,7 @@ export default function GroupVideosTab({ groupId, openUpload, onUploadClosed }) 
                 <TableCell sx={bodyCellStyles}>{formatFileSize(video.size)}</TableCell>
                 <TableCell sx={bodyCellStyles}>{formatVideoDate(video.createdAt)}</TableCell>
                 <TableCell align="right" sx={bodyCellStyles}>
-                  <IconButton sx={{ color: "#a0a4ab" }}>
+                  <IconButton sx={{ color: "text.secondary" }}>
                     <FiMoreVertical size={20} />
                   </IconButton>
                 </TableCell>
@@ -205,7 +205,7 @@ export default function GroupVideosTab({ groupId, openUpload, onUploadClosed }) 
             )}
             {!isLoading && !errorMessage && videos.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 5, color: "#6b7280" }}>
+                <TableCell colSpan={8} align="center" sx={{ py: 5, color: "text.secondary" }}>
                   Videolar topilmadi
                 </TableCell>
               </TableRow>
@@ -267,9 +267,10 @@ function UploadDialog({
             justifyContent: "center",
             gap: 1,
             minHeight: 160,
-            border: "2px dashed #d8dee8",
+            border: "2px dashed",
+            borderColor: "divider",
             borderRadius: "12px",
-            bgcolor: "#fafbfc",
+            bgcolor: "action.hover",
             cursor: "pointer",
             px: 2,
             textAlign: "center",
@@ -277,10 +278,10 @@ function UploadDialog({
           }}
         >
           <FiUploadCloud size={36} color={green} />
-          <Typography sx={{ fontWeight: 600, color: "#374151" }}>
+          <Typography sx={{ fontWeight: 600, color: "text.primary" }}>
             Videofaylni yuklash uchun ushbu hudud ustiga bosing yoki faylni shu yerga olib keling
           </Typography>
-          <Typography sx={{ fontSize: 13, color: "#6b7280" }}>
+          <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
             Videofayl: {allowedFormats} formatlaridan birida bo'lishi kerak
           </Typography>
           <input
@@ -349,7 +350,7 @@ function UploadDialog({
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={onClose} sx={{ textTransform: "none", fontWeight: 700, color: "#4b5563" }}>
+        <Button onClick={onClose} sx={{ textTransform: "none", fontWeight: 700, color: "text.secondary" }}>
           Bekor qilish
         </Button>
         <Button
@@ -390,7 +391,7 @@ function VideoPlayerDialog({ video, onClose }) {
             sx={{ width: "100%", borderRadius: "10px", bgcolor: "#000" }}
           />
         ) : (
-          <Typography sx={{ color: "#6b7280", py: 4, textAlign: "center" }}>
+          <Typography sx={{ color: "text.secondary", py: 4, textAlign: "center" }}>
             Video manzili topilmadi
           </Typography>
         )}
@@ -400,17 +401,19 @@ function VideoPlayerDialog({ video, onClose }) {
 }
 
 const headCellStyles = {
-  color: "#7f858e",
+  color: "text.secondary",
   fontSize: 14,
   fontWeight: 700,
-  borderBottom: "1px solid #edf0f4",
+  borderBottom: "1px solid",
+  borderColor: "divider",
   py: 1.5,
 };
 
 const bodyCellStyles = {
-  color: "#374151",
+  color: "text.primary",
   fontSize: 14,
-  borderBottom: "1px solid #edf0f4",
+  borderBottom: "1px solid",
+  borderColor: "divider",
   py: 1.2,
 };
 
@@ -427,12 +430,13 @@ const statusBadgeStyles = {
 
 const dialogHeadStyles = {
   fontWeight: 700,
-  color: "#6b7280",
+  color: "text.secondary",
   fontSize: 13,
 };
 
 const dialogBodyStyles = {
-  borderBottom: "1px solid #edf0f4",
+  borderBottom: "1px solid",
+  borderColor: "divider",
   py: 1.2,
 };
 

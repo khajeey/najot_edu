@@ -186,20 +186,20 @@ export default function ForgotPasswordDialog({ open, onClose, onDone }) {
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             {step > 0 && (
-              <IconButton size="small" onClick={back} disabled={isLoading} sx={{ color: "#223061" }}>
+              <IconButton size="small" onClick={back} disabled={isLoading} sx={{ color: "text.primary" }}>
                 <FiArrowLeft size={18} />
               </IconButton>
             )}
-            <Typography sx={{ fontSize: 18, fontWeight: 700, color: "#223061" }}>
+            <Typography sx={{ fontSize: 18, fontWeight: 700, color: "text.primary" }}>
               Parolni tiklash
             </Typography>
           </Box>
-          <IconButton size="small" onClick={handleClose} disabled={isLoading} sx={{ color: "#8d8d8d" }}>
+          <IconButton size="small" onClick={handleClose} disabled={isLoading} sx={{ color: "text.secondary" }}>
             <FiX size={18} />
           </IconButton>
         </Box>
 
-        <Typography sx={{ fontSize: 12.5, color: "#6f7480", mb: 2.5 }}>
+        <Typography sx={{ fontSize: 12.5, color: "text.secondary", mb: 2.5 }}>
           {step + 1}/3 — {steps[step]}
         </Typography>
 
@@ -268,7 +268,7 @@ export default function ForgotPasswordDialog({ open, onClose, onDone }) {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton edge="end" onClick={() => setShowPassword((v) => !v)} sx={{ color: "#6f7480" }}>
+                    <IconButton edge="end" onClick={() => setShowPassword((v) => !v)} sx={{ color: "text.secondary" }}>
                       {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
                     </IconButton>
                   </InputAdornment>
@@ -306,7 +306,7 @@ export default function ForgotPasswordDialog({ open, onClose, onDone }) {
             onClick={() => !isLoading && sendOtp()}
             sx={{
               fontSize: 12,
-              color: "#223061",
+              color: "text.primary",
               fontWeight: 600,
               cursor: isLoading ? "default" : "pointer",
               mb: 1.5,
@@ -355,9 +355,9 @@ function MethodButton({ active, onClick, label }) {
         fontWeight: 700,
         cursor: "pointer",
         border: "1px solid",
-        borderColor: active ? "#223061" : "#cfcfcf",
+        borderColor: active ? "#223061" : "divider",
         bgcolor: active ? "#223061" : "transparent",
-        color: active ? "#fff" : "#6f7480",
+        color: active ? "#fff" : "text.secondary",
       }}
     >
       {label}
@@ -372,20 +372,20 @@ const fieldStyles = {
     transform: "none",
     mb: 0.7,
     fontSize: 11,
-    color: "#222633",
+    color: "text.primary",
   },
-  "& .MuiInputLabel-root.Mui-focused": { color: "#222633" },
+  "& .MuiInputLabel-root.Mui-focused": { color: "text.primary" },
   "& .MuiOutlinedInput-root": {
     height: 41,
     borderRadius: "4px",
     fontSize: 12,
-    bgcolor: "#fff",
-    "& fieldset": { borderColor: "#cfcfcf" },
-    "&:hover fieldset": { borderColor: "#b8b8b8" },
+    bgcolor: "background.paper",
+    "& fieldset": { borderColor: "divider" },
+    "&:hover fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderWidth: 1, borderColor: "#223061" },
   },
   "& .MuiOutlinedInput-input": {
     px: 1.8,
-    "&::placeholder": { color: "#8d8d8d", opacity: 1 },
+    "&::placeholder": { color: "text.secondary", opacity: 1 },
   },
 };

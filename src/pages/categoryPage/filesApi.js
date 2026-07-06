@@ -25,14 +25,21 @@ export function normalizeVideoFile(item) {
       ? lesson.topic || lesson.name || lesson.title
       : item.lesson_name || item.lessonName || "—";
 
+  // Backend size_mb ni MB da qaytaradi; formatFileSize baytda kutadi.
+  const sizeBytes =
+    item.size ?? item.file_size ?? item.hajmi ??
+    (item.size_mb != null ? Number(item.size_mb) * 1024 * 1024 : undefined);
+
   return {
     id: item.id,
-    name: item.name || item.title || item.fileName || item.filename || item.original_name || "Video",
+    name:
+      item.name || item.title || item.originalname || item.original_name ||
+      item.fileName || item.filename || "Video",
     lessonName,
     lessonId: item.lesson_id ?? lesson?.id ?? null,
     status: item.status || "Tayyor",
-    lessonDate: item.lesson_date || item.lessonDate || lesson?.date,
-    size: item.size || item.file_size || item.hajmi,
+    lessonDate: item.lesson_date || item.lessonDate || lesson?.date || lesson?.created_at,
+    size: sizeBytes,
     createdAt: item.created_at || item.createdAt,
     playUrl: getFilePlayUrl(item),
   };

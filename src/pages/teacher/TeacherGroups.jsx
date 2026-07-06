@@ -118,7 +118,7 @@ export default function TeacherGroups({ variant = "active" }) {
               <TableCell sx={headCellStyles}>Talabalar</TableCell>
               <TableCell align="right" sx={headCellStyles}>
                 <Tooltip title="Yangilash">
-                  <IconButton size="small" onClick={loadData} sx={{ color: "#9aa0a8" }}>
+                  <IconButton size="small" onClick={loadData} sx={{ color: "text.secondary" }}>
                     <FiRefreshCw size={18} />
                   </IconButton>
                 </Tooltip>
@@ -154,7 +154,7 @@ export default function TeacherGroups({ variant = "active" }) {
                     {group.lessonTime || "—"}
                   </Typography>
                   {group.days && (
-                    <Typography sx={{ mt: 0.4, fontSize: 14, color: "#9ba0a8" }}>{group.days}</Typography>
+                    <Typography sx={{ mt: 0.4, fontSize: 14, color: "text.secondary" }}>{group.days}</Typography>
                   )}
                 </TableCell>
                 <TableCell sx={bodyCellStyles}>{group.room || "—"}</TableCell>
@@ -165,7 +165,7 @@ export default function TeacherGroups({ variant = "active" }) {
                   </Typography>
                 </TableCell>
                 <TableCell align="right" sx={bodyCellStyles}>
-                  <IconButton sx={{ color: "#a0a4ab" }} onClick={(event) => openMenu(event, group)}>
+                  <IconButton sx={{ color: "text.secondary" }} onClick={(event) => openMenu(event, group)}>
                     <FiMoreVertical size={22} />
                   </IconButton>
                 </TableCell>
@@ -173,14 +173,14 @@ export default function TeacherGroups({ variant = "active" }) {
             ))}
             {!isLoading && !errorMessage && visibleGroups.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 6, color: "#8a8f98", fontSize: 16 }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 6, color: "text.secondary", fontSize: 16 }}>
                   Hozircha guruhlar yo'q
                 </TableCell>
               </TableRow>
             )}
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 6, color: "#6b7280" }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 6, color: "text.secondary" }}>
                   Yuklanmoqda...
                 </TableCell>
               </TableRow>
@@ -254,7 +254,7 @@ function StudentsDialog({ group, onClose }) {
             <TableBody>
               {students.map((student, index) => (
                 <TableRow key={student.id ?? index}>
-                  <TableCell sx={{ ...bodyCellStyles, width: 64, color: "#9ba0a8" }}>{index + 1}</TableCell>
+                  <TableCell sx={{ ...bodyCellStyles, width: 64, color: "text.secondary" }}>{index + 1}</TableCell>
                   <TableCell sx={{ ...bodyCellStyles, fontWeight: 600 }}>
                     {student.full_name || student.name || "—"}
                   </TableCell>
@@ -262,7 +262,7 @@ function StudentsDialog({ group, onClose }) {
               ))}
               {students.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={2} align="center" sx={{ py: 4, color: "#8a8f98" }}>
+                  <TableCell colSpan={2} align="center" sx={{ py: 4, color: "text.secondary" }}>
                     Talabalar yo'q
                   </TableCell>
                 </TableRow>
@@ -296,14 +296,14 @@ const activeTabStyles = {
 };
 
 const inactiveTabStyles = {
-  color: "#8c9199",
+  color: "text.secondary",
   border: "1px solid transparent",
 };
 
 const headCellStyles = {
   height: 58,
   py: 0,
-  color: "#7f858e",
+  color: "text.secondary",
   fontSize: 15.5,
   fontWeight: 700,
   borderBottom: "1px solid",

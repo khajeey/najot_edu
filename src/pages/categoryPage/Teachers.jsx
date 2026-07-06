@@ -40,6 +40,7 @@ import { api, getApiErrorMessage } from "../../api/axiosClient";
 import { purple } from "./constants";
 import { pageTitleSx, panelPaperSx } from "../../theme/surfaces";
 import { getProfilePhotoUrl } from "../../utils/photos";
+import { isValidUzPhone, normalizePhone } from "../../utils/phone";
 
 export default function Teachers() {
   const navigate = useNavigate();
@@ -73,7 +74,7 @@ export default function Teachers() {
         throw new Error(data.message || "O'qituvchilarni yuklashda xatolik");
       }
 
-      setTeachers(data.data.map(normalizeTeacher));
+      setTeachers(data.data.map(normalizeTeacher).sort((a, b) => b.id - a.id));
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, "Server bilan bog'lanishda xatolik"));
     } finally {
@@ -118,11 +119,22 @@ export default function Teachers() {
   const handleSave = async (teacher) => {
     try {
       setSaveError("");
+
+      if (!isValidUzPhone(teacher.phone)) {
+        setSaveError("Telefon raqamini to'liq kiriting: +998 va 9 ta raqam");
+        return;
+      }
+
+      if (!/^\S+@\S+\.\S+$/.test(teacher.email.trim())) {
+        setSaveError("Email manzilini to'g'ri kiriting (masalan: ism@example.com)");
+        return;
+      }
+
       const formData = new FormData();
 
       formData.append("full_name", teacher.name);
-      formData.append("email", teacher.email);
-      formData.append("phone", teacher.phone);
+      formData.append("email", teacher.email.trim());
+      formData.append("phone", normalizePhone(teacher.phone));
       formData.append("address", teacher.address);
 
       if (teacher.password) {
@@ -206,7 +218,7 @@ export default function Teachers() {
         </Button>
       </Box>
 
-      <Typography sx={{ mb: 2.8, fontSize: 16.5, color: "#5e6570" }}>
+      <Typography sx={{ mb: 2.8, fontSize: 16.5, color: "text.secondary" }}>
         Ushbu sahifada siz o'qituvchilar ro'yxatini va ularning ma'lumotlarini topasiz.
         Har bir o'qituvchining ismi, fanlari va aloqa ma'lumotlari keltirilgan.
       </Typography>
@@ -219,7 +231,8 @@ export default function Teachers() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            borderBottom: "1px solid #edf0f4",
+            borderBottom: "1px solid",
+            borderBottomColor: "divider",
           }}
         >
           <Box sx={{ display: "flex", gap: 1.2 }}>
@@ -267,12 +280,13 @@ export default function Teachers() {
             sx={{
               px: 2.5,
               py: 2,
-              borderBottom: "1px solid #edf0f4",
+              borderBottom: "1px solid",
+              borderBottomColor: "divider",
               display: "grid",
               gridTemplateColumns: "220px 220px auto",
               gap: 1.5,
               alignItems: "center",
-              bgcolor: "#fbfcfe",
+              bgcolor: "action.hover",
               "@media (max-width: 900px)": {
                 gridTemplateColumns: "1fr",
               },
@@ -373,13 +387,13 @@ export default function Teachers() {
                           height: 38,
                           borderRadius: "8px",
                           objectFit: "cover",
-                          bgcolor: "#f4f5f7",
+                          bgcolor: "action.hover",
                         }}
                       />
                     ) : (
                       <Box sx={avatarFallbackStyles}>{teacher.name.charAt(0).toUpperCase()}</Box>
                     )}
-                    <Typography className="teacher-name" sx={{ fontSize: 17, fontWeight: 700, color: "#20232a" }}>
+                    <Typography className="teacher-name" sx={{ fontSize: 17, fontWeight: 700, color: "text.primary" }}>
                       {teacher.name}
                     </Typography>
                   </Box>
@@ -416,14 +430,14 @@ export default function Teachers() {
             ))}
             {!isLoading && !errorMessage && filteredTeachers.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 5, color: "#6b7280" }}>
+                <TableCell colSpan={8} align="center" sx={{ py: 5, color: "text.secondary" }}>
                   {archiveMode ? "Arxivdagi o'qituvchilar topilmadi" : "O'qituvchilar topilmadi"}
                 </TableCell>
               </TableRow>
             )}
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 5, color: "#6b7280" }}>
+                <TableCell colSpan={8} align="center" sx={{ py: 5, color: "text.secondary" }}>
                   Yuklanmoqda...
                 </TableCell>
               </TableRow>
@@ -442,7 +456,8 @@ export default function Teachers() {
           sx={{
             height: 82,
             px: 4.5,
-            borderTop: "1px solid #edf0f4",
+            borderTop: "1px solid",
+            borderTopColor: "divider",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -471,7 +486,7 @@ export default function Teachers() {
                   alignItems: "center",
                   justifyContent: "center",
                   bgcolor: safePage === pageNumber ? purple : "transparent",
-                  color: safePage === pageNumber ? "#fff" : "#59606b",
+                  color: safePage === pageNumber ? "#fff" : "text.secondary",
                   fontSize: 18,
                   fontWeight: safePage === pageNumber ? 700 : 400,
                   cursor: "pointer",
@@ -561,9 +576,9 @@ function ConfirmDialog({ open, title, text, onClose, onConfirm }) {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
-      <DialogContent sx={{ color: "#5e6570" }}>{text}</DialogContent>
+      <DialogContent sx={{ color: "text.secondary" }}>{text}</DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} sx={{ textTransform: "none", color: "#4d5662" }}>Bekor qilish</Button>
+        <Button onClick={onClose} sx={{ textTransform: "none", color: "text.secondary" }}>Bekor qilish</Button>
         <Button onClick={onConfirm} sx={{ textTransform: "none", bgcolor: "#ef4444", color: "#fff", "&:hover": { bgcolor: "#dc2626" } }}>
           O'chirish
         </Button>
@@ -576,7 +591,7 @@ function InfoDialog({ open, title, item, onClose }) {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
-      <DialogContent sx={{ minWidth: 320, color: "#39404c" }}>
+      <DialogContent sx={{ minWidth: 320, color: "text.primary" }}>
         <Typography>Ism: {item?.name}</Typography>
         <Typography>Telefon: {item?.phone}</Typography>
         <Typography>Email: {item?.email}</Typography>
@@ -593,12 +608,12 @@ const toolbarButtonStyles = {
   height: 48,
   px: 2,
   borderRadius: "9px",
-  borderColor: "#dfe3eb",
-  color: "#26313f",
+  borderColor: "divider",
+  color: "text.primary",
   fontSize: 16,
   fontWeight: 700,
   textTransform: "none",
-  "&:hover": { borderColor: "#cfd6e2", bgcolor: "#fafbfc" },
+  "&:hover": { borderColor: "divider", bgcolor: "action.hover" },
 };
 
 const activeToolbarButtonStyles = {
@@ -617,22 +632,22 @@ const searchStyles = {
     height: 48,
     borderRadius: "9px",
     fontSize: 18,
-    "& fieldset": { borderColor: "#e2e6ed" },
-    "&:hover fieldset": { borderColor: "#d5dae4" },
+    "& fieldset": { borderColor: "divider" },
+    "&:hover fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
 };
 
 const filterFieldStyles = {
   "& .MuiInputLabel-root": {
-    color: "#707782",
+    color: "text.secondary",
   },
   "& .MuiOutlinedInput-root": {
     height: 40,
     borderRadius: "8px",
-    bgcolor: "#fff",
-    "& fieldset": { borderColor: "#dfe3eb" },
-    "&:hover fieldset": { borderColor: "#cfd6e2" },
+    bgcolor: "background.paper",
+    "& fieldset": { borderColor: "divider" },
+    "&:hover fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
 };
@@ -640,28 +655,31 @@ const filterFieldStyles = {
 const headCellStyles = {
   height: 58,
   py: 0,
-  color: "#858b95",
+  color: "text.secondary",
   fontSize: 16.5,
   fontWeight: 700,
-  borderBottom: "1px solid #edf0f4",
+  borderBottom: "1px solid",
+  borderBottomColor: "divider",
 };
 
 const bodyCellStyles = {
   py: 0,
-  color: "#39404c",
+  color: "text.primary",
   fontSize: 17,
-  borderBottom: "1px solid #edf0f4",
+  borderBottom: "1px solid",
+  borderBottomColor: "divider",
 };
 
 const groupBadgeStyles = {
   height: 32,
   px: 1.2,
   borderRadius: "7px",
-  bgcolor: "#f4f4f5",
-  border: "1px solid #ebedf1",
+  bgcolor: "action.hover",
+  border: "1px solid",
+  borderColor: "divider",
   display: "flex",
   alignItems: "center",
-  color: "#424854",
+  color: "text.primary",
   fontSize: 15,
 };
 
@@ -681,7 +699,7 @@ const avatarFallbackStyles = {
 const actionButtonStyles = {
   width: 30,
   height: 30,
-  color: "#818892",
+  color: "text.secondary",
   "&:hover": {
     bgcolor: "#f2f0fb",
     color: purple,
@@ -689,9 +707,9 @@ const actionButtonStyles = {
 };
 
 const paginationSideButton = {
-  color: "#4d5662",
+  color: "text.secondary",
   fontSize: 16,
   fontWeight: 700,
   textTransform: "none",
-  "&:hover": { bgcolor: "#f6f7f9" },
+  "&:hover": { bgcolor: "action.hover" },
 };

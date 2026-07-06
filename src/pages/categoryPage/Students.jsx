@@ -36,6 +36,7 @@ import {
 } from "react-icons/fi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getProfilePhotoUrl } from "../../utils/photos";
+import { isValidUzPhone, normalizePhone } from "../../utils/phone";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import StudentDrawer from "./StudentDrawer";
 import { purple } from "./constants";
@@ -71,7 +72,7 @@ export default function Students() {
         throw new Error(data.message || "Talabalarni yuklashda xatolik");
       }
 
-      setStudents(data.data.map(normalizeStudent));
+      setStudents(data.data.map(normalizeStudent).sort((a, b) => b.id - a.id));
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, "Server bilan bog'lanishda xatolik"));
     } finally {
@@ -116,11 +117,22 @@ export default function Students() {
   const handleSave = async (student) => {
     try {
       setSaveError("");
+
+      if (!isValidUzPhone(student.phone)) {
+        setSaveError("Telefon raqamini to'liq kiriting: +998 va 9 ta raqam");
+        return;
+      }
+
+      if (!/^\S+@\S+\.\S+$/.test(student.email.trim())) {
+        setSaveError("Email manzilini to'g'ri kiriting (masalan: ism@example.com)");
+        return;
+      }
+
       const formData = new FormData();
 
       formData.append("full_name", student.name);
-      formData.append("email", student.email);
-      formData.append("phone", student.phone);
+      formData.append("email", student.email.trim());
+      formData.append("phone", normalizePhone(student.phone));
       formData.append("address", student.address);
       formData.append("birth_date", student.birthDateRaw);
 
@@ -188,7 +200,7 @@ export default function Students() {
         </Button>
       </Box>
 
-      <Typography sx={{ mb: 2.8, fontSize: 16.5, color: "#5e6570" }}>
+      <Typography sx={{ mb: 2.8, fontSize: 16.5, color: "text.secondary" }}>
         Ushbu sahifada siz Talabalar ro'yxatini va ularning ma'lumotlarini topasiz.
         Har bir Talaba ismi, fanlari va aloqa ma'lumotlari keltirilgan.
       </Typography>
@@ -268,7 +280,7 @@ export default function Students() {
                     onClick={() => navigate(`/students/${student.id}`)}
                   >
                     {student.avatar ? <Box component="img" src={student.avatar} alt={student.name} sx={imageAvatarStyles} /> : <Box sx={avatarStyles}>{student.name.charAt(0)}</Box>}
-                    <Typography className="student-name" sx={{ fontSize: 14, fontWeight: 700, color: "#20232a" }}>{student.name}</Typography>
+                    <Typography className="student-name" sx={{ fontSize: 14, fontWeight: 700, color: "text.primary" }}>{student.name}</Typography>
                   </Box>
                 </TableCell>
                 <TableCell sx={bodyCellStyles}><Box sx={{ display: "flex", gap: 0.6 }}>{student.groups.map((group) => <Box key={group} sx={groupBadgeStyles}>{group}</Box>)}</Box></TableCell>
@@ -287,9 +299,9 @@ export default function Students() {
               </TableRow>
             ))}
             {!isLoading && !errorMessage && filteredStudents.length === 0 && (
-              <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5, color: "#6b7280" }}>{archiveMode ? "Arxivdagi talabalar topilmadi" : "Talabalar topilmadi"}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5, color: "text.secondary" }}>{archiveMode ? "Arxivdagi talabalar topilmadi" : "Talabalar topilmadi"}</TableCell></TableRow>
             )}
-            {isLoading && <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5, color: "#6b7280" }}>Yuklanmoqda...</TableCell></TableRow>}
+            {isLoading && <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5, color: "text.secondary" }}>Yuklanmoqda...</TableCell></TableRow>}
             {errorMessage && <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5, color: "#ef4444" }}>{errorMessage}</TableCell></TableRow>}
           </TableBody>
         </Table>
@@ -348,9 +360,9 @@ function ConfirmDialog({ open, title, text, onClose, onConfirm }) {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
-      <DialogContent sx={{ color: "#5e6570" }}>{text}</DialogContent>
+      <DialogContent sx={{ color: "text.secondary" }}>{text}</DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} sx={{ textTransform: "none", color: "#4d5662" }}>Bekor qilish</Button>
+        <Button onClick={onClose} sx={{ textTransform: "none", color: "text.secondary" }}>Bekor qilish</Button>
         <Button onClick={onConfirm} sx={{ textTransform: "none", bgcolor: "#ef4444", color: "#fff", "&:hover": { bgcolor: "#dc2626" } }}>O'chirish</Button>
       </DialogActions>
     </Dialog>
@@ -361,7 +373,7 @@ function InfoDialog({ open, title, item, onClose }) {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
-      <DialogContent sx={{ minWidth: 320, color: "#39404c" }}>
+      <DialogContent sx={{ minWidth: 320, color: "text.primary" }}>
         <Typography>Ism: {item?.name}</Typography>
         <Typography>Telefon: {item?.phone}</Typography>
         <Typography>Email: {item?.email}</Typography>
@@ -375,20 +387,20 @@ function InfoDialog({ open, title, item, onClose }) {
 }
 
 const primaryButtonStyles = { height: 46, px: 2.7, borderRadius: "8px", bgcolor: purple, color: "#fff", fontSize: 17, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: "#684bcf" } };
-const toolbarStyles = { height: 66, px: 2, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #edf0f4" };
-const toolbarButtonStyles = { height: 38, px: 1.8, borderRadius: "8px", borderColor: "#dfe3eb", color: "#26313f", fontSize: 14, fontWeight: 700, textTransform: "none", "&:hover": { borderColor: "#cfd6e2", bgcolor: "#fafbfc" } };
+const toolbarStyles = { height: 66, px: 2, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid", borderBottomColor: "divider" };
+const toolbarButtonStyles = { height: 38, px: 1.8, borderRadius: "8px", borderColor: "divider", color: "text.primary", fontSize: 14, fontWeight: 700, textTransform: "none", "&:hover": { borderColor: "divider", bgcolor: "action.hover" } };
 const activeToolbarButtonStyles = { borderColor: "#d8cff5", bgcolor: "#f1edff", color: purple, "&:hover": { borderColor: "#c7b8f2", bgcolor: "#ebe4ff" } };
-const searchStyles = { width: 250, "& .MuiOutlinedInput-root": { height: 38, borderRadius: "8px", fontSize: 14, "& fieldset": { borderColor: "#e2e6ed" }, "&:hover fieldset": { borderColor: "#d5dae4" }, "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 } } };
-const filterPanelStyles = { px: 2, py: 2, borderBottom: "1px solid #edf0f4", display: "grid", gridTemplateColumns: "220px 220px auto", gap: 1.5, alignItems: "center", bgcolor: "#fbfcfe" };
+const searchStyles = { width: 250, "& .MuiOutlinedInput-root": { height: 38, borderRadius: "8px", fontSize: 14, "& fieldset": { borderColor: "divider" }, "&:hover fieldset": { borderColor: "divider" }, "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 } } };
+const filterPanelStyles = { px: 2, py: 2, borderBottom: "1px solid", borderBottomColor: "divider", display: "grid", gridTemplateColumns: "220px 220px auto", gap: 1.5, alignItems: "center", bgcolor: "action.hover" };
 const filterFieldStyles = { "& .MuiOutlinedInput-root": { height: 40, borderRadius: "8px", bgcolor: "background.paper", "& fieldset": { borderColor: "divider" }, "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 } } };
 const clearButtonStyles = { justifySelf: "start", height: 40, px: 2, borderRadius: "8px", color: purple, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: "#f2edff" } };
-const headCellStyles = { height: 48, py: 0, color: "#858b95", fontSize: 13.5, fontWeight: 700, borderBottom: "1px solid #edf0f4" };
-const bodyCellStyles = { py: 0, color: "#39404c", fontSize: 13.5, borderBottom: "1px solid #edf0f4" };
+const headCellStyles = { height: 48, py: 0, color: "text.secondary", fontSize: 13.5, fontWeight: 700, borderBottom: "1px solid", borderBottomColor: "divider" };
+const bodyCellStyles = { py: 0, color: "text.primary", fontSize: 13.5, borderBottom: "1px solid", borderBottomColor: "divider" };
 const avatarStyles = { width: 34, height: 34, borderRadius: "50%", bgcolor: "#f0eafb", color: purple, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 };
-const imageAvatarStyles = { width: 34, height: 34, borderRadius: "50%", objectFit: "cover", bgcolor: "#f4f5f7" };
-const groupBadgeStyles = { height: 26, px: 0.9, borderRadius: "7px", bgcolor: "#f4f4f5", display: "flex", alignItems: "center", color: "#424854", fontSize: 12 };
-const actionButtonStyles = { width: 26, height: 26, color: "#818892", "&:hover": { bgcolor: "#f2f0fb", color: purple } };
-const paginationStyles = { height: 68, px: 2.5, borderTop: "1px solid #edf0f4", display: "flex", alignItems: "center", justifyContent: "space-between" };
-const paginationSideButton = { color: "#4d5662", fontSize: 14, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: "#f6f7f9" } };
-const pageButtonStyles = { width: 34, height: 34, borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "#59606b", fontSize: 14, cursor: "pointer" };
+const imageAvatarStyles = { width: 34, height: 34, borderRadius: "50%", objectFit: "cover", bgcolor: "action.hover" };
+const groupBadgeStyles = { height: 26, px: 0.9, borderRadius: "7px", bgcolor: "action.hover", display: "flex", alignItems: "center", color: "text.primary", fontSize: 12 };
+const actionButtonStyles = { width: 26, height: 26, color: "text.secondary", "&:hover": { bgcolor: "#f2f0fb", color: purple } };
+const paginationStyles = { height: 68, px: 2.5, borderTop: "1px solid", borderTopColor: "divider", display: "flex", alignItems: "center", justifyContent: "space-between" };
+const paginationSideButton = { color: "text.secondary", fontSize: 14, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: "action.hover" } };
+const pageButtonStyles = { width: 34, height: 34, borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "text.secondary", fontSize: 14, cursor: "pointer" };
 const activePageStyles = { bgcolor: purple, color: "#fff", fontWeight: 700 };

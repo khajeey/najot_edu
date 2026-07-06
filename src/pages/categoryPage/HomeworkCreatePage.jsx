@@ -15,7 +15,7 @@ import { fetchLessonTopics, resolveLessonId } from "./lessonApi";
 import TopicComboField from "./TopicComboField";
 
 const green = "#20b486";
-const MAX_FILE_BYTES = 15 * 1024 * 1024;
+const MAX_FILE_BYTES = 200 * 1024 * 1024;
 
 function formatFileSize(bytes) {
   if (bytes < 1024 * 1024) {
@@ -70,11 +70,6 @@ export default function HomeworkCreatePage() {
       return;
     }
 
-    if (!file) {
-      setErrorMessage("Fayl tanlash shart");
-      return;
-    }
-
     setIsSaving(true);
     setErrorMessage("");
 
@@ -91,7 +86,9 @@ export default function HomeworkCreatePage() {
       formData.append("lesson_id", String(Number(lessonId)));
       formData.append("group_id", String(Number(groupId)));
       formData.append("title", title.trim());
-      formData.append("file", file);
+      if (file) {
+        formData.append("file", file);
+      }
 
       const { data } = await api.post("/homework", formData);
 
@@ -206,10 +203,10 @@ export default function HomeworkCreatePage() {
         >
           <FiUploadCloud size={30} color={green} />
           <Typography sx={{ fontWeight: 600, fontSize: 14, color: "text.primary" }}>
-            {file ? file.name : "Faylni tanlash yoki shu yerga tashlang"}
+            {file ? file.name : "Faylni tanlash yoki shu yerga tashlang (ixtiyoriy)"}
           </Typography>
           <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-            Maksimal hajm: {formatFileSize(MAX_FILE_BYTES)}
+            Rasm yoki video biriktirish shart emas · Maksimal hajm: {formatFileSize(MAX_FILE_BYTES)}
           </Typography>
           <input
             hidden

@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Checkbox,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -85,7 +84,7 @@ export default function StudentDrawer({ open, initialData, onClose, onSave }) {
       id: initialData?.id,
       name: form.name || "Yangi talaba",
       phone: form.phone,
-      email: form.email || "student@gmail.com",
+      email: form.email.trim(),
       password: form.password,
       birthDateRaw: form.birthDate,
       address: form.address || "Toshkent",
@@ -102,31 +101,35 @@ export default function StudentDrawer({ open, initialData, onClose, onSave }) {
       onClose={onClose}
       PaperProps={{
         sx: {
-          width: 565,
+          width: 330,
           maxWidth: "100vw",
           borderRadius: 0,
           boxShadow: "-18px 0 38px rgba(25, 31, 46, 0.16)",
         },
       }}
     >
-      <Box sx={{ height: "100%", display: "flex", flexDirection: "column", bgcolor: "#fff" }}>
-        <Box sx={{ px: 7, pt: 4.2, pb: 3, borderBottom: "1px solid #eceef2" }}>
+      <Box sx={{ height: "100%", display: "flex", flexDirection: "column", bgcolor: "background.paper" }}>
+        <Box sx={{ px: 2.4, pt: 1.8, pb: 1.6, borderBottom: "1px solid", borderColor: "divider" }}>
           <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
             <Box>
-              <Typography sx={{ fontSize: 30, fontWeight: 700, color: "#121722" }}>
+              <Typography sx={{ fontSize: 18, fontWeight: 700, color: "text.primary" }}>
                 {initialData ? "Talabani tahrirlash" : "Talaba qo'shish"}
               </Typography>
-              <Typography sx={{ mt: 1.1, fontSize: 19, color: "#6e7480" }}>
+              <Typography sx={{ mt: 0.7, fontSize: 12, color: "text.secondary" }}>
                 Bu yerda siz yangi Talaba qo'shishingiz mumkin.
               </Typography>
             </Box>
-            <IconButton onClick={onClose} sx={{ color: "#969ba3", mt: 0.4 }}>
-              <FiX size={28} />
+            <IconButton
+              aria-label="close student drawer"
+              onClick={onClose}
+              sx={{ color: "text.secondary", mt: -0.8, mr: -0.8, "&:hover": { bgcolor: "action.hover" } }}
+            >
+              <FiX size={18} />
             </IconButton>
           </Box>
         </Box>
 
-        <Box sx={{ flex: 1, px: 7, py: 3, overflowY: "auto" }}>
+        <Box sx={{ flex: 1, px: 2.4, py: 2, overflowY: "auto" }}>
           <TextField
             value={form.name}
             onChange={(event) => updateField("name", event.target.value)}
@@ -154,7 +157,7 @@ export default function StudentDrawer({ open, initialData, onClose, onSave }) {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <FiMail size={22} color="#9ca3af" />
+                    <FiMail size={16} color="#9ca3af" />
                   </InputAdornment>
                 ),
               }}
@@ -171,7 +174,7 @@ export default function StudentDrawer({ open, initialData, onClose, onSave }) {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <FiCalendar size={22} color="#111827" />
+                    <FiCalendar size={16} color="#8e949d" />
                   </InputAdornment>
                 ),
               }}
@@ -200,7 +203,7 @@ export default function StudentDrawer({ open, initialData, onClose, onSave }) {
           </FormField>
 
           <FormField label="Guruh">
-            <Button onClick={() => setGroupDialogOpen(true)} startIcon={<FiPlus size={28} />} sx={groupButtonStyles}>
+            <Button onClick={() => setGroupDialogOpen(true)} startIcon={<FiPlus size={16} />} sx={groupButtonStyles}>
               {selectedGroups.length ? selectedGroups.map((group) => group.name).join(", ") : "Guruh qo'shish"}
             </Button>
           </FormField>
@@ -213,21 +216,21 @@ export default function StudentDrawer({ open, initialData, onClose, onSave }) {
                 hidden
                 onChange={(event) => updateField("photo", event.target.files?.[0] || null)}
               />
-              <FiUploadCloud size={34} color="#9ca3af" />
-              <Typography sx={{ mt: 1.8, fontSize: 21, color: "#252b35" }}>
+              <FiUploadCloud size={22} color="#9ca3af" />
+              <Typography sx={{ mt: 1.2, fontSize: 12, color: "text.primary" }}>
                 <Box component="span" sx={{ color: purple, fontWeight: 700 }}>
                   {form.photo ? form.photo.name : "Click to upload"}
                 </Box>
                 {!form.photo && " or drag and drop"}
               </Typography>
-              <Typography sx={{ mt: 1, fontSize: 17, color: "#9ca3af" }}>
+              <Typography sx={{ mt: 0.4, fontSize: 10, color: "text.secondary" }}>
                 JPG or PNG (max. 2 MB)
               </Typography>
             </Box>
           </FormField>
         </Box>
 
-        <Box sx={{ px: 4, py: 2.4, borderTop: "1px solid #eceef2", display: "flex", justifyContent: "flex-end", gap: 2 }}>
+        <Box sx={{ px: 2, py: 1.3, borderTop: "1px solid", borderColor: "divider", display: "flex", justifyContent: "flex-end", gap: 1 }}>
           <Button onClick={onClose} variant="outlined" sx={cancelButtonStyles}>
             Bekor qilish
           </Button>
@@ -241,11 +244,11 @@ export default function StudentDrawer({ open, initialData, onClose, onSave }) {
         <DialogTitle sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", pb: 1 }}>
           <Box>
             <Typography sx={{ fontSize: 20, fontWeight: 700 }}>Guruhga biriktirish</Typography>
-            <Typography sx={{ mt: 0.4, fontSize: 12, color: "#6b7280" }}>
+            <Typography sx={{ mt: 0.4, fontSize: 12, color: "text.secondary" }}>
               Bir yoki bir nechta guruhni tanlang
             </Typography>
           </Box>
-          <IconButton onClick={() => setGroupDialogOpen(false)} sx={{ color: "#969ba3", mr: -1 }}>
+          <IconButton onClick={() => setGroupDialogOpen(false)} sx={{ color: "text.secondary", mr: -1 }}>
             <FiX size={22} />
           </IconButton>
         </DialogTitle>
@@ -262,7 +265,7 @@ export default function StudentDrawer({ open, initialData, onClose, onSave }) {
               ),
             }}
           />
-          <Box sx={{ mt: 1.5, border: "1px solid #e7e9ef", borderRadius: "8px", overflow: "hidden" }}>
+          <Box sx={{ mt: 1.5, border: "1px solid", borderColor: "divider", borderRadius: "8px", overflow: "hidden" }}>
             {groups.map((group) => (
               <Box key={group.id} onClick={() => toggleGroup(group.id)} sx={groupRowStyles}>
                 <Checkbox checked={form.groupIds.includes(group.id)} size="small" />
@@ -271,8 +274,8 @@ export default function StudentDrawer({ open, initialData, onClose, onSave }) {
             ))}
           </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2, borderTop: "1px solid #eceef2" }}>
-          <Button onClick={() => setGroupDialogOpen(false)} sx={{ textTransform: "none", color: "#4d5662", fontWeight: 700 }}>
+        <DialogActions sx={{ px: 3, py: 2, borderTop: "1px solid", borderColor: "divider" }}>
+          <Button onClick={() => setGroupDialogOpen(false)} sx={{ textTransform: "none", color: "text.secondary", fontWeight: 700 }}>
             Bekor qilish
           </Button>
           <Button onClick={() => setGroupDialogOpen(false)} sx={{ textTransform: "none", bgcolor: "#b03df2", color: "#fff", fontWeight: 700, px: 2.4, "&:hover": { bgcolor: purple } }}>
@@ -286,8 +289,8 @@ export default function StudentDrawer({ open, initialData, onClose, onSave }) {
 
 function FormField({ label, children }) {
   return (
-    <Box sx={{ mt: 4 }}>
-      <Typography sx={{ mb: 1.4, fontSize: 21, fontWeight: 700, color: "#2f3743" }}>
+    <Box sx={{ mt: 2 }}>
+      <Typography sx={{ mb: 0.8, fontSize: 12, fontWeight: 700, color: "text.primary" }}>
         {label}
       </Typography>
       {children}
@@ -297,38 +300,43 @@ function FormField({ label, children }) {
 
 const inputStyles = {
   "& .MuiOutlinedInput-root": {
-    height: 60,
-    borderRadius: "12px",
-    fontSize: 22,
-    color: "#343843",
-    "& fieldset": { borderColor: "#d5d8de" },
-    "&:hover fieldset": { borderColor: "#c6cbd3" },
+    height: 36,
+    borderRadius: "6px",
+    fontSize: 13,
+    color: "text.primary",
+    "& fieldset": { borderColor: "divider" },
+    "&:hover fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
+  "& .MuiOutlinedInput-input": {
+    py: 0,
+  },
   "& .MuiOutlinedInput-input::placeholder": {
-    color: "#9ea1a8",
+    color: "text.secondary",
     opacity: 1,
   },
 };
 
 const groupButtonStyles = {
   width: "100%",
-  minHeight: 73,
-  borderRadius: "12px",
-  border: "1px solid #e0e2e7",
+  minHeight: 36,
+  borderRadius: "6px",
+  border: "1px solid",
+  borderColor: "divider",
   color: purple,
   justifyContent: "flex-start",
-  px: 2.7,
-  fontSize: 25,
-  fontWeight: 700,
+  px: 1.1,
+  fontSize: 13,
+  fontWeight: 600,
   textTransform: "none",
   "&:hover": { bgcolor: "#faf8ff", borderColor: "#d8cff5" },
 };
 
 const uploadBoxStyles = {
-  height: 200,
-  borderRadius: "13px",
-  border: "1px dashed #d7d9df",
+  height: 98,
+  borderRadius: "8px",
+  border: "1px dashed",
+  borderColor: "divider",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
@@ -336,25 +344,25 @@ const uploadBoxStyles = {
 };
 
 const cancelButtonStyles = {
-  width: 205,
-  height: 61,
-  borderRadius: "11px",
-  borderColor: "#dfe4ee",
-  color: "#5b626e",
-  fontSize: 23,
-  fontWeight: 700,
+  width: 88,
+  height: 34,
+  borderRadius: "8px",
+  borderColor: "divider",
+  color: "text.secondary",
+  fontSize: 12,
+  fontWeight: 600,
   textTransform: "none",
-  "&:hover": { borderColor: "#cfd5e2", bgcolor: "#fafbfc" },
+  "&:hover": { borderColor: "divider", bgcolor: "action.hover" },
 };
 
 const saveButtonStyles = {
-  width: 171,
-  height: 61,
-  borderRadius: "11px",
+  width: 88,
+  height: 34,
+  borderRadius: "8px",
   bgcolor: purple,
   color: "#fff",
-  fontSize: 23,
-  fontWeight: 700,
+  fontSize: 12,
+  fontWeight: 600,
   textTransform: "none",
   "&:hover": { bgcolor: "#684bcf" },
 };
@@ -364,7 +372,7 @@ const dialogSearchStyles = {
     height: 36,
     borderRadius: "6px",
     fontSize: 13,
-    "& fieldset": { borderColor: "#e2e5eb" },
+    "& fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
 };
@@ -375,7 +383,8 @@ const groupRowStyles = {
   display: "flex",
   alignItems: "center",
   gap: 1,
-  borderBottom: "1px solid #edf0f4",
+  borderBottom: "1px solid",
+  borderColor: "divider",
   cursor: "pointer",
   "&:last-child": { borderBottom: 0 },
 };

@@ -73,11 +73,12 @@ export default function GroupHomeworkTab({ groupId, groupName }) {
                 textTransform: "none",
                 fontWeight: 700,
                 fontSize: 15,
-                bgcolor: activeSubTab === index ? "#fff" : "transparent",
-                color: activeSubTab === index ? "#111827" : "#8c9199",
+                bgcolor: activeSubTab === index ? "background.paper" : "transparent",
+                color: activeSubTab === index ? "text.primary" : "text.secondary",
                 boxShadow: activeSubTab === index ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
-                border: activeSubTab === index ? "1px solid #e3e6ec" : "1px solid transparent",
-                "&:hover": { bgcolor: activeSubTab === index ? "#fff" : "#f5f6f8" },
+                border: activeSubTab === index ? "1px solid" : "1px solid transparent",
+                borderColor: activeSubTab === index ? "divider" : "transparent",
+                "&:hover": { bgcolor: activeSubTab === index ? "background.paper" : "action.hover" },
               }}
             >
               {label}
@@ -112,10 +113,10 @@ export default function GroupHomeworkTab({ groupId, groupName }) {
       </Box>
 
       {activeSubTab === 0 ? (
-        <Paper elevation={0} sx={{ borderRadius: "12px", border: "1px solid #e7e9ef", bgcolor: "#fff", overflow: "hidden" }}>
+        <Paper elevation={0} sx={{ borderRadius: "12px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", overflow: "hidden" }}>
           <Table sx={{ minWidth: 1100 }}>
             <TableHead>
-              <TableRow sx={{ bgcolor: "#fafbfc" }}>
+              <TableRow sx={{ bgcolor: "action.hover" }}>
                 <TableCell sx={headCellStyles}>#</TableCell>
                 <TableCell sx={headCellStyles}>Mavzu</TableCell>
                 <TableCell align="center" sx={iconHeadCellStyles}>
@@ -151,7 +152,7 @@ export default function GroupHomeworkTab({ groupId, groupName }) {
                   }}
                 >
                   <TableCell sx={bodyCellStyles}>{index + 1}</TableCell>
-                  <TableCell sx={{ ...bodyCellStyles, fontWeight: 700, color: "#111827" }}>{lesson.topic}</TableCell>
+                  <TableCell sx={{ ...bodyCellStyles, fontWeight: 700, color: "text.primary" }}>{lesson.topic}</TableCell>
                   <TableCell align="center" sx={bodyCellStyles}>
                     <Typography sx={metricTextStyles}>{lesson.studentsCount}</Typography>
                   </TableCell>
@@ -166,7 +167,7 @@ export default function GroupHomeworkTab({ groupId, groupName }) {
                     <Typography
                       sx={{
                         ...metricTextStyles,
-                        color: lesson.pending > 0 ? "#ef4444" : "#111827",
+                        color: lesson.pending > 0 ? "#ef4444" : "text.primary",
                       }}
                     >
                       {lesson.pending}
@@ -180,7 +181,7 @@ export default function GroupHomeworkTab({ groupId, groupName }) {
                   <TableCell sx={bodyCellStyles}>{formatHomeworkDate(lesson.lessonDate)}</TableCell>
                   <TableCell align="right" sx={bodyCellStyles}>
                     <IconButton
-                      sx={{ color: "#a0a4ab" }}
+                      sx={{ color: "text.secondary" }}
                       onClick={(event) => {
                         event.stopPropagation();
                         if (lesson.homeworkId) {
@@ -211,7 +212,7 @@ export default function GroupHomeworkTab({ groupId, groupName }) {
               )}
               {!isLoading && !errorMessage && lessons.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} align="center" sx={{ py: 5, color: "#6b7280" }}>
+                  <TableCell colSpan={9} align="center" sx={{ py: 5, color: "text.secondary" }}>
                     Uyga vazifalar topilmadi
                   </TableCell>
                 </TableRow>
@@ -226,8 +227,8 @@ export default function GroupHomeworkTab({ groupId, groupName }) {
           onUploadClosed={() => setOpenVideoUpload(false)}
         />
       ) : (
-        <Paper elevation={0} sx={{ borderRadius: "12px", border: "1px solid #e7e9ef", bgcolor: "#fff", py: 6, textAlign: "center" }}>
-          <Typography sx={{ color: "#6b7280", fontSize: 16 }}>
+        <Paper elevation={0} sx={{ borderRadius: "12px", border: "1px solid", borderColor: "divider", bgcolor: "background.paper", py: 6, textAlign: "center" }}>
+          <Typography sx={{ color: "text.secondary", fontSize: 16 }}>
             "{lessonSubTabs[activeSubTab]}" bo'limi tez orada qo'shiladi.
           </Typography>
         </Paper>
@@ -237,10 +238,11 @@ export default function GroupHomeworkTab({ groupId, groupName }) {
 }
 
 const headCellStyles = {
-  color: "#7f858e",
+  color: "text.secondary",
   fontSize: 14,
   fontWeight: 700,
-  borderBottom: "1px solid #edf0f4",
+  borderBottom: "1px solid",
+  borderColor: "divider",
   py: 1.5,
 };
 
@@ -251,14 +253,15 @@ const iconHeadCellStyles = {
 };
 
 const bodyCellStyles = {
-  color: "#374151",
+  color: "text.primary",
   fontSize: 14,
-  borderBottom: "1px solid #edf0f4",
+  borderBottom: "1px solid",
+  borderColor: "divider",
   py: 1.2,
 };
 
 const metricTextStyles = {
   fontWeight: 700,
   fontSize: 15,
-  color: "#111827",
+  color: "text.primary",
 };

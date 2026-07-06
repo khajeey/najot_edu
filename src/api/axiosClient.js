@@ -51,5 +51,9 @@ export function getApiErrorMessage(error, fallback) {
     return "So'rov topilmadi (404). API manzili yoki endpoint noto'g'ri bo'lishi mumkin.";
   }
 
+  if (status === 409) {
+    return "Bu telefon raqami yoki email allaqachon ro'yxatdan o'tgan. Boshqa raqam yoki email kiriting.";
+  }
+
   return error.response?.data?.message || error.message || fallback;
 }

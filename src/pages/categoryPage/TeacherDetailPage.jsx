@@ -71,7 +71,7 @@ export default function TeacherDetailPage() {
         <IconButton onClick={() => navigate(-1)} sx={roundIconButtonStyles}>
           <FiArrowLeft size={20} />
         </IconButton>
-        <Typography sx={{ fontSize: 28, fontWeight: 700, color: "#10131a" }}>O'qituvchi profili</Typography>
+        <Typography sx={{ fontSize: 28, fontWeight: 700, color: "text.primary" }}>O'qituvchi profili</Typography>
       </Box>
 
       <Paper elevation={0} sx={heroPaperStyles}>
@@ -88,7 +88,7 @@ export default function TeacherDetailPage() {
           )}
           <Box sx={{ flex: 1, minWidth: 220 }}>
             <Chip label="O'qituvchi" size="small" sx={roleChipStyles} />
-            <Typography sx={{ mt: 1, fontSize: 30, fontWeight: 800, color: "#10131a" }}>{teacher.name}</Typography>
+            <Typography sx={{ mt: 1, fontSize: 30, fontWeight: 800, color: "text.primary" }}>{teacher.name}</Typography>
             <Box sx={{ mt: 1.5, display: "flex", flexDirection: "column", gap: 0.8 }}>
               <InfoRow icon={FiPhone} value={teacher.phone} />
               <InfoRow icon={FiMail} value={teacher.email} />
@@ -130,11 +130,11 @@ export default function TeacherDetailPage() {
                   sx={groupRowStyles}
                 >
                   <Typography sx={{ fontWeight: 700, color: purple }}>{group.name}</Typography>
-                  <Typography sx={{ fontSize: 14, color: "#6b7280" }}>{group.course || "—"}</Typography>
+                  <Typography sx={{ fontSize: 14, color: "text.secondary" }}>{group.course || "—"}</Typography>
                 </Box>
               ))
             ) : (
-              <Typography sx={{ color: "#9ba0a8" }}>Guruh biriktirilmagan</Typography>
+              <Typography sx={{ color: "text.secondary" }}>Guruh biriktirilmagan</Typography>
             )}
           </Box>
         </Paper>
@@ -200,7 +200,7 @@ function formatDate(value) {
 
 function InfoRow({ icon: Icon, value }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "#4b5563" }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "text.secondary" }}>
       <Icon size={16} />
       <Typography sx={{ fontSize: 15 }}>{value || "—"}</Typography>
     </Box>
@@ -210,8 +210,8 @@ function InfoRow({ icon: Icon, value }) {
 function DetailRow({ label, value }) {
   return (
     <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
-      <Typography sx={{ color: "#6b7280" }}>{label}</Typography>
-      <Typography sx={{ fontWeight: 700, color: "#111827" }}>{value}</Typography>
+      <Typography sx={{ color: "text.secondary" }}>{label}</Typography>
+      <Typography sx={{ fontWeight: 700, color: "text.primary" }}>{value}</Typography>
     </Box>
   );
 }
@@ -220,29 +220,31 @@ function StatCard({ label, value, icon: Icon }) {
   return (
     <Paper elevation={0} sx={statCardStyles}>
       <Icon size={24} color={purple} />
-      <Typography sx={{ mt: 1, color: "#6b7280", fontSize: 15 }}>{label}</Typography>
-      <Typography sx={{ fontSize: 32, fontWeight: 800, color: "#111827", lineHeight: 1.1 }}>{value}</Typography>
+      <Typography sx={{ mt: 1, color: "text.secondary", fontSize: 15 }}>{label}</Typography>
+      <Typography sx={{ fontSize: 32, fontWeight: 800, color: "text.primary", lineHeight: 1.1 }}>{value}</Typography>
     </Paper>
   );
 }
 
 const backButtonStyles = {
   textTransform: "none",
-  color: "#4b5563",
+  color: "text.secondary",
   fontWeight: 700,
 };
 
 const roundIconButtonStyles = {
   width: 40,
   height: 40,
-  border: "1px solid #e5e7eb",
-  bgcolor: "#fff",
+  border: "1px solid",
+  borderColor: "divider",
+  bgcolor: "background.paper",
 };
 
 const heroPaperStyles = {
   borderRadius: "16px",
-  bgcolor: "#fff",
-  border: "1px solid #e7e9ef",
+  bgcolor: "background.paper",
+  border: "1px solid",
+  borderColor: "divider",
   p: 3,
 };
 
@@ -267,21 +269,23 @@ const roleChipStyles = {
 
 const panelStyles = {
   borderRadius: "12px",
-  bgcolor: "#fff",
-  border: "1px solid #e7e9ef",
+  bgcolor: "background.paper",
+  border: "1px solid",
+  borderColor: "divider",
   p: 2.5,
 };
 
 const panelTitleStyles = {
   fontSize: 20,
   fontWeight: 700,
-  color: "#111827",
+  color: "text.primary",
 };
 
 const groupRowStyles = {
   p: 1.5,
   borderRadius: "10px",
-  border: "1px solid #edf0f4",
+  border: "1px solid",
+  borderColor: "divider",
   cursor: "pointer",
   transition: "border-color 160ms ease, background-color 160ms ease",
   "&:hover": {
@@ -292,8 +296,9 @@ const groupRowStyles = {
 
 const statCardStyles = {
   borderRadius: "12px",
-  bgcolor: "#fff",
-  border: "1px solid #e7e9ef",
+  bgcolor: "background.paper",
+  border: "1px solid",
+  borderColor: "divider",
   p: 2.2,
   minHeight: 120,
 };

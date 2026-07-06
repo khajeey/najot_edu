@@ -59,7 +59,10 @@ export default function Groups() {
         throw new Error(groupsRes.data.message || "Guruhlarni yuklashda xatolik");
       }
 
-      const normalized = (groupsRes.data.data || []).map((group) => normalizeGroup(group, showArchive));
+      const normalized = (groupsRes.data.data || [])
+        .slice()
+        .sort((a, b) => b.id - a.id)
+        .map((group) => normalizeGroup(group, showArchive));
       setGroups(normalized);
       setStats({
         groups: normalized.length,
@@ -171,7 +174,7 @@ export default function Groups() {
         )}
       </Box>
 
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2.2, borderBottom: "1px solid #e7e8ed", mb: 2.6 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2.2, borderBottom: "1px solid", borderBottomColor: "divider", mb: 2.6 }}>
         <Box
           role="button"
           tabIndex={0}
@@ -221,14 +224,14 @@ export default function Groups() {
                 position: "relative",
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, color: "#90949b" }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, color: "text.secondary" }}>
                 <Icon size={26} color={purple} />
                 <Typography sx={{ fontSize: 14, color: "text.secondary" }}>{card.label}</Typography>
               </Box>
               <Typography sx={{ fontSize: 28, fontWeight: 800, color: "text.primary", lineHeight: 1 }}>
                 {card.value}
               </Typography>
-              <IconButton sx={{ position: "absolute", right: 12, top: 14, color: "#a6a9af" }}>
+              <IconButton sx={{ position: "absolute", right: 12, top: 14, color: "text.secondary" }}>
                 <FiMoreVertical size={22} />
               </IconButton>
             </Paper>
@@ -285,8 +288,8 @@ export default function Groups() {
                 </TableCell>
                 <TableCell sx={bodyCellStyles}>{group.duration}</TableCell>
                 <TableCell sx={bodyCellStyles}>
-                  <Typography sx={{ fontSize: 17, fontWeight: 700, color: "#111827" }}>{group.lessonTime}</Typography>
-                  <Typography sx={{ mt: 0.4, fontSize: 14, color: "#9ba0a8" }}>{group.days}</Typography>
+                  <Typography sx={{ fontSize: 17, fontWeight: 700, color: "text.primary" }}>{group.lessonTime}</Typography>
+                  <Typography sx={{ mt: 0.4, fontSize: 14, color: "text.secondary" }}>{group.days}</Typography>
                 </TableCell>
                 <TableCell sx={bodyCellStyles}>{group.room}</TableCell>
                 <TableCell sx={bodyCellStyles}>
@@ -308,16 +311,16 @@ export default function Groups() {
                         </Typography>
                       ))
                     ) : (
-                      <Typography sx={{ fontSize: 15, color: "#9ba0a8" }}>—</Typography>
+                      <Typography sx={{ fontSize: 15, color: "text.secondary" }}>—</Typography>
                     )}
                   </Box>
                 </TableCell>
                 <TableCell sx={bodyCellStyles}>
-                  <Typography sx={{ fontSize: 17, fontWeight: 700, color: "#111827" }}>{group.students}</Typography>
+                  <Typography sx={{ fontSize: 17, fontWeight: 700, color: "text.primary" }}>{group.students}</Typography>
                 </TableCell>
                 <TableCell align="right" sx={bodyCellStyles}>
                   <IconButton
-                    sx={{ color: "#a0a4ab" }}
+                    sx={{ color: "text.secondary" }}
                     onClick={(event) => {
                       setMenuAnchor(event.currentTarget);
                       setMenuGroup(group);
@@ -330,14 +333,14 @@ export default function Groups() {
             ))}
             {!isLoading && !errorMessage && groups.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 5, color: "#6b7280" }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 5, color: "text.secondary" }}>
                   {archiveMode ? "Arxivdagi guruhlar topilmadi" : "Guruhlar topilmadi"}
                 </TableCell>
               </TableRow>
             )}
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 5, color: "#6b7280" }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 5, color: "text.secondary" }}>
                   Yuklanmoqda...
                 </TableCell>
               </TableRow>
@@ -417,9 +420,9 @@ function ConfirmDialog({ open, title, text, onClose, onConfirm }) {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
-      <DialogContent sx={{ color: "#5e6570" }}>{text}</DialogContent>
+      <DialogContent sx={{ color: "text.secondary" }}>{text}</DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} sx={{ textTransform: "none", color: "#4d5662" }}>Bekor qilish</Button>
+        <Button onClick={onClose} sx={{ textTransform: "none", color: "text.secondary" }}>Bekor qilish</Button>
         <Button
           onClick={onConfirm}
           sx={{ textTransform: "none", bgcolor: "#ef4444", color: "#fff", "&:hover": { bgcolor: "#dc2626" } }}
@@ -453,28 +456,31 @@ const tabStyles = {
 };
 
 const activeTabStyles = {
-  borderBottom: "2px solid #222",
-  color: "#111827",
+  borderBottom: "2px solid",
+  borderBottomColor: "text.primary",
+  color: "text.primary",
 };
 
 const inactiveTabStyles = {
-  color: "#8c9199",
+  color: "text.secondary",
 };
 
 const headCellStyles = {
   height: 58,
   py: 0,
-  color: "#7f858e",
+  color: "text.secondary",
   fontSize: 15.5,
   fontWeight: 700,
-  borderBottom: "1px solid #edf0f4",
+  borderBottom: "1px solid",
+  borderBottomColor: "divider",
 };
 
 const bodyCellStyles = {
   py: 0,
-  color: "#242832",
+  color: "text.primary",
   fontSize: 17,
-  borderBottom: "1px solid #edf0f4",
+  borderBottom: "1px solid",
+  borderBottomColor: "divider",
 };
 
 const switchStyles = {
@@ -535,6 +541,7 @@ const dashedTextStyles = {
   display: "inline-block",
   fontSize: 17,
   fontWeight: 700,
-  color: "#111827",
-  borderBottom: "1px dashed #a9adb5",
+  color: "text.primary",
+  borderBottom: "1px dashed",
+  borderBottomColor: "divider",
 };

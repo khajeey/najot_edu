@@ -213,11 +213,11 @@ const inputStyles = {
     borderRadius: "11px",
     fontSize: 18,
     "& fieldset": { borderColor: "divider" },
-    "&:hover fieldset": { borderColor: "#cfd6e2" },
+    "&:hover fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
   "& .MuiOutlinedInput-input::placeholder": {
-    color: "#9b9da3",
+    color: "text.secondary",
     opacity: 1,
   },
 };
@@ -227,7 +227,7 @@ const selectStyles = {
   borderRadius: "11px",
   fontSize: 18,
   "& fieldset": { borderColor: "divider" },
-  "&:hover fieldset": { borderColor: "#cfd6e2" },
+  "&:hover fieldset": { borderColor: "divider" },
   "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   "& .MuiSelect-select": {
     display: "flex",
@@ -235,7 +235,7 @@ const selectStyles = {
   },
   "& .MuiSelect-icon": {
     right: 18,
-    color: "#a0a3a8",
+    color: "text.secondary",
     fontSize: 22,
   },
 };
@@ -246,7 +246,7 @@ const textareaStyles = {
     fontSize: 18,
     alignItems: "flex-start",
     "& fieldset": { borderColor: "divider" },
-    "&:hover fieldset": { borderColor: "#cfd6e2" },
+    "&:hover fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
   "& .MuiOutlinedInput-input": {

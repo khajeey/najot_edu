@@ -57,7 +57,7 @@ export function normalizeRoom(room) {
 
 export async function fetchCourses() {
   const list = await loadList(["/courses", "/courses/all"]);
-  return list.map(normalizeCourse);
+  return list.slice().sort((a, b) => b.id - a.id).map(normalizeCourse);
 }
 
 export async function fetchArchivedCourses() {
@@ -68,7 +68,7 @@ export async function fetchArchivedCourses() {
 
 export async function fetchRooms() {
   const list = await loadList(["/rooms", "/rooms/all"]);
-  return list.map(normalizeRoom);
+  return list.slice().sort((a, b) => b.id - a.id).map(normalizeRoom);
 }
 
 export async function fetchArchivedRooms() {

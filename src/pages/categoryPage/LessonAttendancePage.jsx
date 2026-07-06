@@ -220,7 +220,7 @@ export default function LessonAttendancePage() {
         </IconButton>
         <Box>
           <Typography sx={{ fontSize: 26, fontWeight: 700 }}>{group?.name}</Typography>
-          <Typography sx={{ color: "#6b7280", fontSize: 14 }}>Akademik davomat — {lessonDate}</Typography>
+          <Typography sx={{ color: "text.secondary", fontSize: 14 }}>Akademik davomat — {lessonDate}</Typography>
         </Box>
       </Box>
 
@@ -236,7 +236,7 @@ export default function LessonAttendancePage() {
         />
       </Paper>
 
-      <Box sx={{ display: "flex", gap: 3, mt: 3, mb: 2, borderBottom: "1px solid #e7e9ef" }}>
+      <Box sx={{ display: "flex", gap: 3, mt: 3, mb: 2, borderBottom: "1px solid", borderColor: "divider" }}>
         {["assistant", "teacher"].map((tab) => (
           <Button
             key={tab}
@@ -245,7 +245,7 @@ export default function LessonAttendancePage() {
               textTransform: "capitalize",
               fontWeight: 700,
               fontSize: 16,
-              color: roleTab === tab ? green : "#8c9199",
+              color: roleTab === tab ? green : "text.secondary",
               borderBottom: roleTab === tab ? `2px solid ${green}` : "2px solid transparent",
               borderRadius: 0,
               pb: 1.2,
@@ -350,7 +350,7 @@ export default function LessonAttendancePage() {
             ))}
             {students.length === 0 && (
               <TableRow>
-                <TableCell colSpan={3} align="center" sx={{ py: 4, color: "#6b7280" }}>
+                <TableCell colSpan={3} align="center" sx={{ py: 4, color: "text.secondary" }}>
                   Talabalar topilmadi
                 </TableCell>
               </TableRow>
@@ -375,8 +375,8 @@ export default function LessonAttendancePage() {
 function MetaItem({ label, value }) {
   return (
     <Box>
-      <Typography sx={{ fontSize: 13, color: "#6b7280" }}>{label}</Typography>
-      <Typography sx={{ fontWeight: 700, color: "#111827" }}>{value}</Typography>
+      <Typography sx={{ fontSize: 13, color: "text.secondary" }}>{label}</Typography>
+      <Typography sx={{ fontWeight: 700, color: "text.primary" }}>{value}</Typography>
     </Box>
   );
 }
@@ -384,28 +384,30 @@ function MetaItem({ label, value }) {
 const backIconStyles = {
   width: 40,
   height: 40,
-  border: "1px solid #e5e7eb",
-  bgcolor: "#fff",
+  border: "1px solid",
+  borderColor: "divider",
+  bgcolor: "background.paper",
 };
 
 const sectionPaperStyles = {
   borderRadius: "12px",
-  bgcolor: "#fff",
-  border: "1px solid #e7e9ef",
+  bgcolor: "background.paper",
+  border: "1px solid",
+  borderColor: "divider",
   p: 2.5,
 };
 
 const blockTitleStyles = {
   fontSize: 20,
   fontWeight: 700,
-  color: "#111827",
+  color: "text.primary",
 };
 
 const avatarStyles = {
   width: 56,
   height: 56,
   borderRadius: "50%",
-  bgcolor: "#eef0f4",
+  bgcolor: "action.hover",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -426,25 +428,27 @@ const fieldLabelStyles = {
   mb: 1,
   fontSize: 15,
   fontWeight: 700,
-  color: "#374151",
+  color: "text.primary",
 };
 
 const textareaStyles = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "10px",
-    "& fieldset": { borderColor: "#dce2eb" },
+    "& fieldset": { borderColor: "divider" },
     "&.Mui-focused fieldset": { borderColor: purple, borderWidth: 1 },
   },
 };
 
 const tableHeadStyles = {
   fontWeight: 700,
-  color: "#6b7280",
-  borderBottom: "1px solid #edf0f4",
+  color: "text.secondary",
+  borderBottom: "1px solid",
+  borderColor: "divider",
 };
 
 const tableBodyStyles = {
-  borderBottom: "1px solid #edf0f4",
+  borderBottom: "1px solid",
+  borderColor: "divider",
   py: 1.2,
 };
 

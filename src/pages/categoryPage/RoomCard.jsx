@@ -70,6 +70,6 @@ const actionButton = {
   color: purple,
   borderRadius: "7px",
   "&:hover": {
-    bgcolor: "#ebeef5",
+    bgcolor: "action.hover",
   },
 };
