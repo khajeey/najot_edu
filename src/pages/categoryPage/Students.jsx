@@ -43,7 +43,7 @@ import Reveal from "../../components/Reveal";
 import { purple } from "./constants";
 import { pageTitleSx, panelPaperSx } from "../../theme/surfaces";
 
-const rowsPerPage = 20;
+const rowsPerPage = 10;
 
 export default function Students() {
   const navigate = useNavigate();

@@ -62,7 +62,7 @@ export default function Teachers() {
     address: "",
   });
   const [page, setPage] = useState(1);
-  const rowsPerPage = 20;
+  const rowsPerPage = 10;
 
   const fetchTeachers = async (showArchive = archiveMode) => {
     setIsLoading(true);

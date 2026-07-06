@@ -108,8 +108,29 @@ export async function fetchGroupAttendance(groupId) {
   return [];
 }
 
-export async function resolveLessonId({ groupId, lessonDate, topicMode, topicValue, description }) {
-  if (topicMode === "curriculum" && topicValue.lessonId) {
+// Guruhning darslari ichidan mavzu bo'yicha eng oxirgi (eng katta id) darsni topadi.
+// POST /lessons javobida yangi dars id qaytmagani uchun, yaratgandan keyin shu orqali topamiz.
+export async function findLessonIdByTopic(groupId, topic) {
+  const { data } = await api.get("/lessons", { params: { group_id: Number(groupId) } });
+  const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+  const wanted = String(topic).trim();
+
+  const matches = list.filter(
+    (lesson) =>
+      Number(lesson.group_id ?? lesson.groupId) === Number(groupId) &&
+      String(lesson.topic || "").trim() === wanted
+  );
+
+  if (!matches.length) return null;
+
+  return matches.reduce((newest, lesson) =>
+    Number(lesson.id) > Number(newest.id) ? lesson : newest
+  ).id;
+}
+
+export async function resolveLessonId({ groupId, topicValue, description }) {
+  // Mavjud dars (ro'yxatdan tanlangan) — id allaqachon bor.
+  if (topicValue.lessonId) {
     return topicValue.lessonId;
   }
 
@@ -118,14 +139,17 @@ export async function resolveLessonId({ groupId, lessonDate, topicMode, topicVal
     throw new Error("Mavzuni kiriting");
   }
 
-  const saved = await saveLesson({
+  // Yangi mavzu — avval darsni yaratamiz, keyin uning id sini topib olamiz.
+  await saveLesson({
     group_id: Number(groupId),
-    date: lessonDate,
     topic,
     description: description || "",
-    type: topicMode === "curriculum" ? "curriculum" : "other",
-    lesson_id: topicValue.lessonId || undefined,
   });
 
-  return saved?.id ?? saved?.lesson_id ?? topicValue.lessonId;
+  const lessonId = await findLessonIdByTopic(groupId, topic);
+  if (!lessonId) {
+    throw new Error("Dars yaratildi, lekin uni aniqlab bo'lmadi. Sahifani yangilab, mavzuni ro'yxatdan tanlang.");
+  }
+
+  return lessonId;
 }

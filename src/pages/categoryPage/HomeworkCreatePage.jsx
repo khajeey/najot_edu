@@ -76,8 +76,6 @@ export default function HomeworkCreatePage() {
     try {
       const lessonId = await resolveLessonId({
         groupId,
-        lessonDate: new Date().toISOString().slice(0, 10),
-        topicMode: topicValue.lessonId ? "curriculum" : "other",
         topicValue,
         description: title.trim(),
       });
