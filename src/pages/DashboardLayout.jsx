@@ -31,7 +31,7 @@ export default function DashboardLayout() {
       try {
         const [groupsRes, studentsRes, archiveGroupsRes, archiveStudentsRes] = await Promise.all([
           api.get("/groups/all"),
-          api.get("/students"),
+          api.get("/students", { params: { limit: 1000 } }),
           api.get("/groups/archive").catch(() => ({ data: { data: [] } })),
           api.get("/students/archive").catch(() => ({ data: { data: [] } })),
         ]);

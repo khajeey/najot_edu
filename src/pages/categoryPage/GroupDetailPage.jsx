@@ -55,7 +55,7 @@ export default function GroupDetailPage() {
         const [groupsRes, schedulesRes, studentsRes] = await Promise.all([
           api.get("/groups/all"),
           api.get(`/groups/${groupId}/schedules`),
-          api.get("/students").catch(() => ({ data: { success: false, data: [] } })),
+          api.get("/students", { params: { limit: 1000 } }).catch(() => ({ data: { success: false, data: [] } })),
         ]);
 
         if (!groupsRes.data.success) {

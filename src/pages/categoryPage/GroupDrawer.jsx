@@ -59,7 +59,7 @@ export default function GroupDrawer({ open, onClose, onSave, initialData }) {
       try {
         const [teachersRes, studentsRes, selectOptions] = await Promise.all([
           api.get("/teachers"),
-          api.get("/students"),
+          api.get("/students", { params: { limit: 1000 } }),
           fetchSelectOptions(api),
         ]);
 

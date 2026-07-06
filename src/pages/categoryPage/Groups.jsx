@@ -52,7 +52,7 @@ export default function Groups() {
       const [groupsRes, teachersRes, studentsRes] = await Promise.all([
         api.get(showArchive ? "/groups/archive" : "/groups/all"),
         api.get("/teachers"),
-        api.get("/students"),
+        api.get("/students", { params: { limit: 1000 } }),
       ]);
 
       if (!groupsRes.data.success) {

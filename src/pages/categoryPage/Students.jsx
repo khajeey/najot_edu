@@ -67,7 +67,9 @@ export default function Students() {
     setErrorMessage("");
 
     try {
-      const { data } = await api.get(showArchive ? "/students/archive" : "/students");
+      const { data } = await api.get(showArchive ? "/students/archive" : "/students", {
+        params: { limit: 1000 },
+      });
 
       if (!data.success) {
         throw new Error(data.message || "Talabalarni yuklashda xatolik");
