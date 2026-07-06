@@ -39,10 +39,11 @@ import { getProfilePhotoUrl } from "../../utils/photos";
 import { isValidUzPhone, normalizePhone } from "../../utils/phone";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import StudentDrawer from "./StudentDrawer";
+import Reveal from "../../components/Reveal";
 import { purple } from "./constants";
 import { pageTitleSx, panelPaperSx } from "../../theme/surfaces";
 
-const rowsPerPage = 5;
+const rowsPerPage = 20;
 
 export default function Students() {
   const navigate = useNavigate();
@@ -265,8 +266,8 @@ export default function Students() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {visibleStudents.map((student) => (
-              <TableRow key={student.id} sx={{ height: 54 }}>
+            {visibleStudents.map((student, index) => (
+              <Reveal component={TableRow} key={student.id} index={index} sx={{ height: 54 }}>
                 <TableCell padding="checkbox" sx={bodyCellStyles}><Checkbox size="small" /></TableCell>
                 <TableCell sx={bodyCellStyles}>
                   <Box
@@ -296,7 +297,7 @@ export default function Students() {
                     <IconButton aria-label="edit" onClick={() => { setEditingStudent(student); setDrawerOpen(true); }} sx={actionButtonStyles}><FiEdit2 size={16} /></IconButton>
                   </Box>
                 </TableCell>
-              </TableRow>
+              </Reveal>
             ))}
             {!isLoading && !errorMessage && filteredStudents.length === 0 && (
               <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5, color: "text.secondary" }}>{archiveMode ? "Arxivdagi talabalar topilmadi" : "Talabalar topilmadi"}</TableCell></TableRow>

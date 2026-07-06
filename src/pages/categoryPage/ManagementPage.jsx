@@ -15,6 +15,7 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import { FiPlus } from "react-icons/fi";
 import CourseDrawer from "./CourseDrawer";
+import Reveal from "../../components/Reveal";
 import DataCard from "./DataCard";
 import RoomCard from "./RoomCard";
 import RoomDrawer from "./RoomDrawer";
@@ -344,31 +345,31 @@ export default function ManagementPage({ title }) {
               },
             }}
           >
-            {items.map((item) =>
-              isRoomsTab ? (
-                <RoomCard
-                  key={item.id}
-                  item={item}
-                  isArchived={subTab === "archive"}
-                  onEdit={() => {
-                    setEditingRoom(item);
-                    setDrawerOpen(true);
-                  }}
-                  onDelete={() => setDeletingRoom(item)}
-                />
-              ) : (
-                <DataCard
-                  key={item.id}
-                  item={item}
-                  isArchived={subTab === "archive"}
-                  onEdit={() => {
-                    setEditingCourse(item);
-                    setDrawerOpen(true);
-                  }}
-                  onDelete={() => setDeletingCourse(item)}
-                />
-              )
-            )}
+            {items.map((item, index) => (
+              <Reveal key={item.id} index={index}>
+                {isRoomsTab ? (
+                  <RoomCard
+                    item={item}
+                    isArchived={subTab === "archive"}
+                    onEdit={() => {
+                      setEditingRoom(item);
+                      setDrawerOpen(true);
+                    }}
+                    onDelete={() => setDeletingRoom(item)}
+                  />
+                ) : (
+                  <DataCard
+                    item={item}
+                    isArchived={subTab === "archive"}
+                    onEdit={() => {
+                      setEditingCourse(item);
+                      setDrawerOpen(true);
+                    }}
+                    onDelete={() => setDeletingCourse(item)}
+                  />
+                )}
+              </Reveal>
+            ))}
           </Box>
         )}
       </Paper>

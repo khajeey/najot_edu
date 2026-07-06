@@ -21,6 +21,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
+import Reveal from "../../components/Reveal";
 import { purple } from "./constants";
 import { findGroupInList, normalizeGroup } from "./groupUtils";
 import {
@@ -329,7 +330,7 @@ export default function LessonAttendancePage() {
           </TableHead>
           <TableBody>
             {students.map((student, index) => (
-              <TableRow key={student.id}>
+              <Reveal component={TableRow} key={student.id} index={index}>
                 <TableCell sx={tableBodyStyles}>{index + 1}</TableCell>
                 <TableCell sx={{ ...tableBodyStyles, fontWeight: 600 }}>{student.name}</TableCell>
                 <TableCell align="right" sx={tableBodyStyles}>
@@ -346,7 +347,7 @@ export default function LessonAttendancePage() {
                     sx={attendanceSwitchStyles}
                   />
                 </TableCell>
-              </TableRow>
+              </Reveal>
             ))}
             {students.length === 0 && (
               <TableRow>

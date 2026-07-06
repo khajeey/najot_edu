@@ -36,6 +36,7 @@ import {
 } from "react-icons/fi";
 import { useLocation, useNavigate } from "react-router-dom";
 import TeacherDrawer from "./TeacherDrawer";
+import Reveal from "../../components/Reveal";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import { purple } from "./constants";
 import { pageTitleSx, panelPaperSx } from "../../theme/surfaces";
@@ -61,7 +62,7 @@ export default function Teachers() {
     address: "",
   });
   const [page, setPage] = useState(1);
-  const rowsPerPage = 5;
+  const rowsPerPage = 20;
 
   const fetchTeachers = async (showArchive = archiveMode) => {
     setIsLoading(true);
@@ -361,8 +362,8 @@ export default function Teachers() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {visibleTeachers.map((teacher) => (
-              <TableRow key={teacher.id} sx={{ height: 76 }}>
+            {visibleTeachers.map((teacher, index) => (
+              <Reveal component={TableRow} key={teacher.id} index={index} sx={{ height: 76 }}>
                 <TableCell padding="checkbox" sx={bodyCellStyles}>
                   <Checkbox size="small" />
                 </TableCell>
@@ -426,7 +427,7 @@ export default function Teachers() {
                     </IconButton>
                   </Box>
                 </TableCell>
-              </TableRow>
+              </Reveal>
             ))}
             {!isLoading && !errorMessage && filteredTeachers.length === 0 && (
               <TableRow>

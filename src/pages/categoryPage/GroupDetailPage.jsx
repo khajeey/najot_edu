@@ -14,6 +14,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeft, FiX } from "react-icons/fi";
 import GroupHomeworkTab from "./GroupHomeworkTab";
 import GroupScheduleCalendar from "./GroupScheduleCalendar";
+import Reveal from "../../components/Reveal";
 import { api, getApiErrorMessage } from "../../api/axiosClient";
 import { purple } from "./constants";
 import {
@@ -315,9 +316,10 @@ export default function GroupDetailPage() {
           <Paper elevation={0} sx={sectionPaperStyles}>
             <Typography sx={sectionTitleStyles}>Dars jadvali</Typography>
             <Box sx={{ mt: 2 }}>
-              {visibleRows.map((row) => (
-                <Box
+              {visibleRows.map((row, index) => (
+                <Reveal
                   key={row.id}
+                  index={index}
                   sx={{
                     display: "grid",
                     gridTemplateColumns: "1.4fr 0.8fr 1.2fr 1.4fr 0.8fr",
@@ -338,7 +340,7 @@ export default function GroupDetailPage() {
                   <Typography sx={{ fontWeight: 600, color: "text.primary" }}>{row.time}</Typography>
                   <Typography sx={{ color: "text.secondary", fontSize: 14 }}>{row.dateRange}</Typography>
                   <Typography sx={{ fontWeight: 700, color: "text.primary" }}>{row.room || "—"}</Typography>
-                </Box>
+                </Reveal>
               ))}
               {lessonRows.length === 0 && (
                 <Typography sx={{ py: 3, color: "text.secondary", textAlign: "center" }}>Dars jadvali mavjud emas</Typography>
